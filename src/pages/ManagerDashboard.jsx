@@ -1,7 +1,8 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { motion, AnimatePresence } from 'framer-motion'
 import DashboardLayout from '../components/layout/DashboardLayout'
-import LoadingSpinner from '../components/common/LoadingSpinner'
+import LoadingSpinner, { DashboardSkeleton } from '../components/common/LoadingSpinner'
 import StatusBadge from '../components/common/StatusBadge'
 import EnhancedStatCard, { ComparisonCard } from '../components/dashboard/EnhancedStatCard'
 import AIAlerts from '../components/dashboard/AIAlerts'
@@ -10,6 +11,31 @@ import AttendanceTrendChart from '../components/charts/AttendanceTrendChart'
 import { loadManagerDashboard } from '../features/dashboard/dashboardSlice'
 import { fetchTodayStatus } from '../features/manager/managerSlice'
 import RealTimePresenceMap from '../components/dashboard/RealTimePresenceMap'
+
+// Animation variants for staggered children
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.1
+    }
+  }
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: "spring",
+      stiffness: 100,
+      damping: 15
+    }
+  }
+}
 
 const links = [
   { to: '/manager/dashboard', label: 'Dashboard' },
@@ -22,10 +48,17 @@ export default function ManagerDashboard() {
   const dispatch = useDispatch()
   const { manager } = useSelector((state) => state.dashboard)
   const { today } = useSelector((state) => state.manager)
+  const [initialLoading, setInitialLoading] = useState(true)
 
   useEffect(() => {
-    dispatch(loadManagerDashboard())
-    dispatch(fetchTodayStatus())
+    const loadData = async () => {
+      await Promise.all([
+        dispatch(loadManagerDashboard()),
+        dispatch(fetchTodayStatus())
+      ])
+      setInitialLoading(false)
+    }
+    loadData()
   }, [dispatch])
 
   const data = manager.data
@@ -64,14 +97,39 @@ export default function ManagerDashboard() {
     }
   }, [data, today])
 
+  // Show skeleton during initial load
+  if (initialLoading) {
+    return (
+      <DashboardLayout title="Manager Dashboard" links={links}>
+        <DashboardSkeleton />
+      </DashboardLayout>
+    )
+  }
+
   return (
     <DashboardLayout title="Manager Dashboard" links={links}>
-      {manager.status === 'loading' ? <LoadingSpinner label="Aggregating stats..." /> : null}
+      {/* Loading indicator for refresh */}
+      <AnimatePresence mode="wait">
+        {manager.status === 'loading' && !initialLoading && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <LoadingSpinner label="Aggregating stats..." />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {data ? (
-        <div className="space-y-6">
+        <motion.div 
+          className="space-y-6"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
           {/* Top KPI Cards */}
-          <div className="grid gap-4 md:grid-cols-5">
+          <motion.div className="grid gap-4 md:grid-cols-5 section-shell" variants={itemVariants}>
             <EnhancedStatCard
               title="Total Employees"
               value={data.totalEmployees}
@@ -130,24 +188,28 @@ export default function ManagerDashboard() {
               secondaryValue={85}
               neonColor="rose"
             />
-          </div>
+          </motion.div>
 
           {/* AI Alerts */}
-          <AIAlerts 
-            attendanceData={today || []} 
-            employees={analytics.employees || []} 
-            departments={analytics.departments || []}
-          />
+          <motion.div variants={itemVariants}>
+            <AIAlerts 
+              attendanceData={today || []} 
+              employees={analytics.employees || []} 
+              departments={analytics.departments || []}
+            />
+          </motion.div>
 
-          <RealTimePresenceMap records={today || []} />
+          <motion.div variants={itemVariants}>
+            <RealTimePresenceMap records={today || []} />
+          </motion.div>
 
           {/* Charts Grid */}
-          <div className="grid gap-6 lg:grid-cols-2">
+          <motion.div className="grid gap-6 lg:grid-cols-2 section-shell" variants={itemVariants}>
             <WeeklyAttendanceGraph data={data.weeklyTrend || []} />
             <DepartmentAttendanceGraph data={data.departmentStats || []} />
-          </div>
+          </motion.div>
 
-          <div className="grid gap-6 lg:grid-cols-2">
+          <motion.div className="grid gap-6 lg:grid-cols-2 section-shell" variants={itemVariants}>
             <LateArrivalsTrendGraph 
               data={data.weeklyTrend?.map(day => ({
                 date: day.date,
@@ -161,9 +223,9 @@ export default function ManagerDashboard() {
                 <AttendanceTrendChart data={data.weeklyTrend || []} />
               </div>
             </div>
-          </div>
+          </motion.div>
 
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+          <motion.div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 section-shell" variants={itemVariants}>
             <h3 className="text-lg font-semibold text-white">Late Arrivals Today</h3>
             <div className="mt-3 flex flex-wrap gap-3">
               {data.today.late.length === 0 ? (
@@ -176,9 +238,9 @@ export default function ManagerDashboard() {
                 ))
               )}
             </div>
-          </div>
+          </motion.div>
 
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+          <motion.div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 section-shell" variants={itemVariants}>
             <h3 className="text-lg font-semibold text-white">Absent Employees Today</h3>
             <div className="mt-4 grid gap-3 text-sm text-slate-300 md:grid-cols-2">
               {data.absentEmployees.length === 0 ? (
@@ -195,13 +257,13 @@ export default function ManagerDashboard() {
                 ))
               )}
             </div>
-          </div>
+          </motion.div>
 
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+          <motion.div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 section-shell" variants={itemVariants}>
             <h3 className="text-lg font-semibold text-white">Live Check-ins</h3>
             <p className="text-sm text-slate-400">Employees who have checked in today</p>
             <div className="mt-4 grid gap-3 text-sm text-slate-300 md:grid-cols-2">
-              {today.length === 0 ? (
+              {!today || today.length === 0 ? (
                 <p>No check-ins recorded yet.</p>
               ) : (
                 today.map((record) => (
@@ -218,8 +280,8 @@ export default function ManagerDashboard() {
                 ))
               )}
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       ) : null}
     </DashboardLayout>
   )

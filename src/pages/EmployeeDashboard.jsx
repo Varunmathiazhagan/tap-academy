@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { motion, AnimatePresence } from 'framer-motion'
 import DashboardLayout from '../components/layout/DashboardLayout'
-import LoadingSpinner from '../components/common/LoadingSpinner'
+import LoadingSpinner, { DashboardSkeleton } from '../components/common/LoadingSpinner'
 import StatusBadge from '../components/common/StatusBadge'
 import StatCard from '../components/common/StatCard'
 import ModernCard from '../components/common/ModernCard'
@@ -25,6 +25,31 @@ import {
   selectAttendanceScore,
   selectBadgeProgress 
 } from '../features/performance/performanceSlice'
+
+// Animation variants for staggered children
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.1
+    }
+  }
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: "spring",
+      stiffness: 100,
+      damping: 15
+    }
+  }
+}
 
 const employeeLinks = [
   { to: '/employee/dashboard', label: 'Dashboard' },
@@ -54,29 +79,43 @@ export default function EmployeeDashboard() {
     dispatch(loadToday())
   }, [dispatch])
 
-  const handleCheckIn = () => {
-    dispatch(performCheckIn()).then(() => {
-      dispatch(loadEmployeeDashboard())
-      dispatch(loadToday())
+  const handleCheckIn = async () => {
+    try {
+      const result = await dispatch(performCheckIn())
       
-      // Show achievement toast for early check-in
-      const now = new Date()
-      if (now.getHours() <= 9) {
-        setShowAchievementToast(true)
+      // Only proceed if action was fulfilled
+      if (performCheckIn.fulfilled.match(result)) {
+        dispatch(loadEmployeeDashboard())
+        dispatch(loadToday())
+        
+        // Show achievement toast for early check-in
+        const now = new Date()
+        if (now.getHours() <= 9) {
+          setShowAchievementToast(true)
+        }
       }
-    })
+    } catch (err) {
+      console.error('Check-in failed:', err)
+    }
   }
 
-  const handleCheckOut = () => {
-    dispatch(performCheckOut()).then(() => {
-      dispatch(loadEmployeeDashboard())
-      dispatch(loadToday())
+  const handleCheckOut = async () => {
+    try {
+      const result = await dispatch(performCheckOut())
       
-      // Check for perfect attendance month achievement
-      if (dashboardData && attendanceScore >= 100) {
-        setShowPerfectAttendanceConfetti(true)
+      // Only proceed if action was fulfilled
+      if (performCheckOut.fulfilled.match(result)) {
+        dispatch(loadEmployeeDashboard())
+        dispatch(loadToday())
+        
+        // Check for perfect attendance month achievement
+        if (dashboardData && attendanceScore >= 100) {
+          setShowPerfectAttendanceConfetti(true)
+        }
       }
-    })
+    } catch (err) {
+      console.error('Check-out failed:', err)
+    }
   }
 
   const dashboardData = employee.data
@@ -93,16 +132,16 @@ export default function EmployeeDashboard() {
 
   return (
     <DashboardLayout title="Employee Dashboard" links={employeeLinks}>
-      {/* Modern Loading State */}
-      <AnimatePresence>
-        {employee.status === 'loading' && (
+      {/* Professional Skeleton Loading State */}
+      <AnimatePresence mode="wait">
+        {employee.status === 'loading' && !dashboardData && (
           <motion.div
-            className="flex items-center justify-center min-h-[400px]"
+            key="skeleton"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            exit={{ opacity: 0, transition: { duration: 0.3 } }}
           >
-            <LoadingSpinner size="lg" text="Loading your dashboard..." color="blue" />
+            <DashboardSkeleton />
           </motion.div>
         )}
       </AnimatePresence>
@@ -128,25 +167,24 @@ export default function EmployeeDashboard() {
         onClose={() => setShowAchievementToast(false)}
       />
 
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {dashboardData && (
           <motion.div
+            key="content"
             className="space-y-6"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.5 }}
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            exit={{ opacity: 0 }}
           >
             {/* Neo Glassmorphism Welcome Banner */}
             <motion.div
               className="relative overflow-hidden"
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.1 }}
+              variants={itemVariants}
             >
               {/* Floating Background Elements */}
               <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 opacity-95" />
-              <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-cyan-500/20 via-sky-400/10 to-transparent rounded-full blur-3xl -translate-y-48 translate-x-48" />
+              <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-cyan-500/20 via-sky-400/10 to-transparent rounded-full blur-3xl -translate-y-48 translate-x-48 animate-pulse" />
               <div className="absolute bottom-0 left-0 w-72 h-72 bg-gradient-to-tr from-emerald-500/15 via-cyan-500/10 to-transparent rounded-full blur-2xl translate-y-36 -translate-x-36" />
               
               <GlassCard
@@ -221,9 +259,7 @@ export default function EmployeeDashboard() {
             {/* Neo Glassmorphism KPI Cards */}
             <motion.div 
               className="grid gap-4 sm:gap-5 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.6 }}
+              variants={itemVariants}
             >
               <GlassStatCard
                 title="Attendance Score"
@@ -281,7 +317,7 @@ export default function EmployeeDashboard() {
               />
             </motion.div>
 
-          <div className="section-shell">
+          <motion.div className="section-shell" variants={itemVariants}>
             <div className="section-shell__inner">
               <div className="grid gap-6 lg:grid-cols-1 xl:grid-cols-3">
                 <div className="xl:col-span-3 lg:col-span-1">
@@ -293,11 +329,11 @@ export default function EmployeeDashboard() {
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Kudos / Gamification */}
           {badgeProgress ? (
-            <div className="section-shell">
+            <motion.div className="section-shell" variants={itemVariants}>
               <div className="section-shell__inner space-y-6">
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                   <div>
@@ -362,10 +398,10 @@ export default function EmployeeDashboard() {
                   ))}
                 </div>
               </div>
-            </div>
+            </motion.div>
           ) : null}
 
-          <div className="section-shell">
+          <motion.div className="section-shell" variants={itemVariants}>
             <div className="section-shell__inner">
               <div className="grid gap-6 lg:grid-cols-1 xl:grid-cols-3">
                 <div className="xl:col-span-1">
@@ -391,9 +427,9 @@ export default function EmployeeDashboard() {
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
 
-          <div className="section-shell">
+          <motion.div className="section-shell" variants={itemVariants}>
             <div className="section-shell__inner">
               <div className="grid gap-4 sm:gap-5 md:gap-6 grid-cols-1 xl:grid-cols-2">
                 <AttendanceTimeline record={timelineRecord} />
@@ -423,8 +459,9 @@ export default function EmployeeDashboard() {
                 </ModernCard>
               </div>
             </div>
-          </div>
-          <div className="section-shell">
+          </motion.div>
+
+          <motion.div className="section-shell" variants={itemVariants}>
             <div className="section-shell__inner">
               <div className="grid gap-4 sm:gap-5 md:gap-6 grid-cols-1 lg:grid-cols-2">
                 <HoursWorkedChart 
@@ -443,9 +480,9 @@ export default function EmployeeDashboard() {
                 />
               </div>
             </div>
-          </div>
+          </motion.div>
 
-          <div className="section-shell">
+          <motion.div className="section-shell" variants={itemVariants}>
             <div className="section-shell__inner space-y-4">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                 <h3 className="text-base sm:text-lg font-semibold text-gradient-aurora">Recent Attendance</h3>
@@ -453,7 +490,7 @@ export default function EmployeeDashboard() {
               </div>
               <AttendanceTable records={dashboardData.recent ?? []} />
             </div>
-          </div>
+          </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

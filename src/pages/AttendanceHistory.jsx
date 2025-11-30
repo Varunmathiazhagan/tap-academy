@@ -1,12 +1,38 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { motion, AnimatePresence } from 'framer-motion'
 import DashboardLayout from '../components/layout/DashboardLayout'
 import MonthlyCalendar from '../components/attendance/MonthlyCalendar'
 import AttendanceHeatmap from '../components/attendance/AttendanceHeatmap'
 import AttendanceTable from '../components/attendance/AttendanceTable'
-import LoadingSpinner from '../components/common/LoadingSpinner'
+import LoadingSpinner, { DashboardSkeleton } from '../components/common/LoadingSpinner'
 import GlassCard from '../components/common/GlassCard'
 import { loadHistory, loadSummary } from '../features/attendance/attendanceSlice'
+
+// Animation variants for staggered children
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.05
+    }
+  }
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: "spring",
+      stiffness: 100,
+      damping: 15
+    }
+  }
+}
 
 const links = [
   { to: '/employee/dashboard', label: 'Dashboard' },
@@ -21,10 +47,17 @@ export default function AttendanceHistory() {
   const [selectedMonth, setSelectedMonth] = useState(() => new Date().toISOString().slice(0, 7))
   const [viewMode, setViewMode] = useState('calendar') // 'calendar', 'table', or 'heatmap'
   const [statusFilter, setStatusFilter] = useState('') // '', 'present', 'absent', 'late', 'half-day'
+  const [initialLoading, setInitialLoading] = useState(true)
 
   useEffect(() => {
-    dispatch(loadHistory({ month: `${selectedMonth}-01` }))
-    dispatch(loadSummary({ month: `${selectedMonth}-01` }))
+    const loadData = async () => {
+      await Promise.all([
+        dispatch(loadHistory({ month: `${selectedMonth}-01` })),
+        dispatch(loadSummary({ month: `${selectedMonth}-01` }))
+      ])
+      setInitialLoading(false)
+    }
+    loadData()
   }, [dispatch, selectedMonth])
 
   const monthDate = new Date(`${selectedMonth}-01`)
@@ -32,11 +65,25 @@ export default function AttendanceHistory() {
     ? history.filter((r) => r.status === statusFilter)
     : history
 
+  // Show skeleton during initial load
+  if (initialLoading) {
+    return (
+      <DashboardLayout title="My Attendance History" links={links}>
+        <DashboardSkeleton />
+      </DashboardLayout>
+    )
+  }
+
   return (
     <DashboardLayout title="My Attendance History" links={links}>
-      <div className="space-y-4 sm:space-y-5 md:space-y-6">
+      <motion.div 
+        className="space-y-4 sm:space-y-5 md:space-y-6"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
         {/* Header Controls */}
-        <div className="section-shell">
+        <motion.div className="section-shell" variants={itemVariants}>
           <div className="section-shell__inner">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
@@ -149,27 +196,40 @@ export default function AttendanceHistory() {
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
 
-        {loading ? <LoadingSpinner label="Fetching attendance..." /> : null}
+        {/* Loading State for refetch */}
+        <AnimatePresence mode="wait">
+          {loading && !initialLoading && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <LoadingSpinner label="Fetching attendance..." />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* View Toggle Content */}
-        {viewMode === 'calendar' ? (
-          <MonthlyCalendar monthDate={monthDate} records={filteredHistory} />
-        ) : viewMode === 'heatmap' ? (
-          <AttendanceHeatmap records={filteredHistory} year={new Date(selectedMonth).getFullYear()} />
-        ) : (
-          <div className="section-shell">
-            <div className="section-shell__inner space-y-4">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                <h3 className="text-base sm:text-lg font-bold text-gradient-aurora">Detailed Records</h3>
-                <span className="text-xs sm:text-sm text-slate-400">{filteredHistory.length} records</span>
+        <motion.div variants={itemVariants}>
+          {viewMode === 'calendar' ? (
+            <MonthlyCalendar monthDate={monthDate} records={filteredHistory} />
+          ) : viewMode === 'heatmap' ? (
+            <AttendanceHeatmap records={filteredHistory} year={new Date(selectedMonth).getFullYear()} />
+          ) : (
+            <div className="section-shell">
+              <div className="section-shell__inner space-y-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                  <h3 className="text-base sm:text-lg font-bold text-gradient-aurora">Detailed Records</h3>
+                  <span className="text-xs sm:text-sm text-slate-400">{filteredHistory.length} records</span>
+                </div>
+                <AttendanceTable records={filteredHistory} />
               </div>
-              <AttendanceTable records={filteredHistory} />
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </motion.div>
+      </motion.div>
     </DashboardLayout>
   )
 }

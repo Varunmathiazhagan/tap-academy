@@ -2,9 +2,9 @@ import { useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { motion, AnimatePresence } from 'framer-motion'
 import clsx from 'clsx'
-import DashboardLayout from '../components/layout/DashboardLayout' // No change needed
+import DashboardLayout from '../components/layout/DashboardLayout'
 import StatusBadge from '../components/common/StatusBadge'
-import LoadingSpinner from '../components/common/LoadingSpinner'
+import LoadingSpinner, { DashboardSkeleton } from '../components/common/LoadingSpinner'
 import ModernCard, { NotificationCard } from '../components/common/ModernCard'
 import AnimatedButton from '../components/common/AnimatedButton'
 import GlassCard, { GlassPanel, GlassStatCard } from '../components/common/GlassCard'
@@ -15,6 +15,31 @@ import ConfettiCelebration from '../components/common/ConfettiCelebration'
 import { loadToday, performCheckIn, performCheckOut, loadHistory } from '../features/attendance/attendanceSlice'
 
 const WEEKDAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+
+// Animation variants for staggered children
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.05
+    }
+  }
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: "spring",
+      stiffness: 100,
+      damping: 15
+    }
+  }
+}
 
 const links = [
   { to: '/employee/dashboard', label: 'Dashboard' },
@@ -33,10 +58,17 @@ export default function MarkAttendance() {
   const [lastAction, setLastAction] = useState(null) // 'checkin' or 'checkout'
   const [showEarlyBirdCelebration, setShowEarlyBirdCelebration] = useState(false)
   const [selectedRecord, setSelectedRecord] = useState(null)
+  const [initialLoading, setInitialLoading] = useState(true)
 
   useEffect(() => {
-    dispatch(loadToday())
-    dispatch(loadHistory({ limit: 120 }))
+    const loadData = async () => {
+      await Promise.all([
+        dispatch(loadToday()),
+        dispatch(loadHistory({ limit: 120 }))
+      ])
+      setInitialLoading(false)
+    }
+    loadData()
   }, [dispatch])
 
   const handleCheckIn = async () => {
@@ -243,6 +275,15 @@ export default function MarkAttendance() {
 
   const resetTimeline = () => setSelectedRecord(null)
 
+  // Show skeleton loading during initial data fetch
+  if (initialLoading) {
+    return (
+      <DashboardLayout title="Mark Attendance" links={links}>
+        <DashboardSkeleton />
+      </DashboardLayout>
+    )
+  }
+
   return (
     <DashboardLayout title="Mark Attendance" links={links}>
       {/* Celebrations */}
@@ -255,12 +296,12 @@ export default function MarkAttendance() {
 
       <motion.div
         className="space-y-6"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
       >
-        {/* Loading State */}
-        <AnimatePresence>
+        {/* Loading State for actions */}
+        <AnimatePresence mode="wait">
           {loading && (
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
@@ -273,7 +314,7 @@ export default function MarkAttendance() {
         </AnimatePresence>
         
         {/* Error Notification */}
-        <AnimatePresence>
+        <AnimatePresence mode="wait">
           {error && (
             <NotificationCard
               type="error"
@@ -285,7 +326,7 @@ export default function MarkAttendance() {
         </AnimatePresence>
 
         {/* Success Notification */}
-        <AnimatePresence>
+        <AnimatePresence mode="wait">
           {showSuccess && (
             <NotificationCard
               type="success"
@@ -299,9 +340,7 @@ export default function MarkAttendance() {
         {/* Neo Glass Hero Section */}
         <motion.div
           className="relative overflow-hidden"
-          initial={{ scale: 0.95, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.1 }}
+          variants={itemVariants}
         >
           {/* Floating Background */}
           <div className="absolute inset-0 gradient-bg-dark" />
@@ -403,11 +442,10 @@ export default function MarkAttendance() {
         {/* Today's Status Capsule */}
         <motion.section
           className={clsx(
-            'relative overflow-hidden rounded-[40px] border border-slate-800/80 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-900/80 p-8 shadow-[0_20px_60px_rgba(15,23,42,0.6)] status-capsule',
+            'relative overflow-hidden rounded-[40px] border border-slate-800/80 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-900/80 p-8 shadow-[0_20px_60px_rgba(15,23,42,0.6)] status-capsule section-shell',
             isLateArrival && 'status-capsule-late'
           )}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          variants={itemVariants}
         >
           <div
             className={clsx(
@@ -482,7 +520,7 @@ export default function MarkAttendance() {
         </motion.section>
 
         {/* Monthly Performance + Recommendations */}
-        <motion.section className="grid gap-4 sm:gap-5 md:gap-6 grid-cols-1 lg:grid-cols-2">
+        <motion.section className="grid gap-4 sm:gap-5 md:gap-6 grid-cols-1 lg:grid-cols-2 section-shell" variants={itemVariants}>
           <GlassPanel
             title="Monthly Performance Score"
             subtitle="Past 30 days"
@@ -561,7 +599,7 @@ export default function MarkAttendance() {
         </motion.section>
 
         {/* Heatmap + Timeline Combo */}
-        <motion.section className="grid gap-4 sm:gap-5 md:gap-6 grid-cols-1 xl:grid-cols-5">
+        <motion.section className="grid gap-4 sm:gap-5 md:gap-6 grid-cols-1 xl:grid-cols-5 section-shell" variants={itemVariants}>
           <div className="xl:col-span-3">
             <AttendanceHeatmap
               records={history}
@@ -590,67 +628,55 @@ export default function MarkAttendance() {
         </motion.section>
 
         {/* Guidelines Card */}
-        <ModernCard className="p-4 sm:p-5 md:p-6">
-          <div className="flex flex-col sm:flex-row items-start gap-4">
-            <motion.div
-              className="flex h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0 items-center justify-center rounded-xl bg-blue-50"
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ delay: 0.8, type: "spring", stiffness: 200 }}
-            >
-              <svg className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </motion.div>
-            
-            <div className="flex-1">
-              <motion.h3
-                className="font-bold text-white text-base sm:text-lg"
-                initial={{ x: -20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ delay: 0.9 }}
+        <motion.div variants={itemVariants}>
+          <ModernCard className="p-4 sm:p-5 md:p-6 section-shell">
+            <div className="flex flex-col sm:flex-row items-start gap-4">
+              <motion.div
+                className="flex h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0 items-center justify-center rounded-xl bg-blue-50"
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                transition={{ type: "spring", stiffness: 300 }}
               >
-                Attendance Guidelines
-              </motion.h3>
+                <svg className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </motion.div>
               
-              <motion.ul
-                className="mt-4 space-y-3"
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 1 }}
-              >
-                {[
-                  {
-                    icon: "✅",
-                    color: "text-green-600",
-                    text: "Check in when you start your workday and check out when you finish"
-                  },
-                  {
-                    icon: "⏰",
-                    color: "text-amber-600",
-                    text: "Arrivals after 9:15 AM will be marked as late"
-                  },
-                  {
-                    icon: "⚠️",
-                    color: "text-red-600",
-                    text: "Contact your manager if you miss a check-in or need to correct your record"
-                  }
-                ].map((item, index) => (
-                  <motion.li
-                    key={index}
-                    className="flex items-start gap-3"
-                    initial={{ x: -30, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ delay: 1.1 + index * 0.1 }}
-                  >
-                    <span className="text-lg">{item.icon}</span>
-                    <span className="text-slate-300 text-sm">{item.text}</span>
-                  </motion.li>
-                ))}
-              </motion.ul>
+              <div className="flex-1">
+                <h3 className="font-bold text-white text-base sm:text-lg">
+                  Attendance Guidelines
+                </h3>
+                
+                <ul className="mt-4 space-y-3">
+                  {[
+                    {
+                      icon: "✅",
+                      color: "text-green-600",
+                      text: "Check in when you start your workday and check out when you finish"
+                    },
+                    {
+                      icon: "⏰",
+                      color: "text-amber-600",
+                      text: "Arrivals after 9:15 AM will be marked as late"
+                    },
+                    {
+                      icon: "⚠️",
+                      color: "text-red-600",
+                      text: "Contact your manager if you miss a check-in or need to correct your record"
+                    }
+                  ].map((item, index) => (
+                    <li
+                      key={index}
+                      className="flex items-start gap-3"
+                    >
+                      <span className="text-lg">{item.icon}</span>
+                      <span className="text-slate-300 text-sm">{item.text}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
-          </div>
-        </ModernCard>
+          </ModernCard>
+        </motion.div>
       </motion.div>
     </DashboardLayout>
   )
