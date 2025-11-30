@@ -1,15 +1,15 @@
 # Employee Attendance System
 
-Full-stack employee attendance tracking platform built with React, Redux Toolkit, Express, and MongoDB. The application supports two roles:
+Full-stack attendance tracking platform for TAP Academy. Employees can register, check in/out, and review trends, while managers monitor teams, export reports, and manage live presence maps.
 
-- **Employee** – register, check in/out, review history, and track monthly summaries.
-- **Manager** – oversee team attendance, filter records, review dashboards, and export CSV reports.
+- **Employee** – register/login, check in/out, review history, monitor KPIs
+- **Manager** – monitor dashboards, filter records, export CSV, audit anomalies
 
 ## Tech Stack
 
-- **Frontend:** React 19, Redux Toolkit, React Router, Tailwind CSS, Recharts
-- **Backend:** Node.js, Express, MongoDB, Mongoose, JWT authentication
-- **Tooling:** Vite, ESLint, Nodemon
+- **Frontend:** React 19, Redux Toolkit, React Router, Tailwind CSS, Framer Motion, Recharts
+- **Backend:** Node.js, Express, MongoDB, Mongoose, JWT auth, CSV writer
+- **Tooling:** Vite, ESLint, Nodemon, dotenv
 
 ## Project Structure
 
@@ -38,70 +38,77 @@ server/
 └── package.json       # Backend dependencies/scripts
 ```
 
-## Getting Started
+## Setup Instructions
 
-### 1. Clone & install
+1. **Prerequisites**
+	- Node.js 20+
+	- npm 10+
+	- MongoDB 6+ running locally or via connection string
 
-```bash
-git clone https://github.com/<your-org>/attendance-platform.git
-cd tap-academy
+2. **Clone & install dependencies**
 
-# Frontend deps
-npm install
+	```bash
+	git clone https://github.com/<your-org>/attendance-platform.git
+	cd tap-academy
 
-# Backend deps
-cd server
-npm install
-```
+	# Frontend deps
+	npm install
 
-### 2. Environment variables
+	# Backend deps
+	cd server
+	npm install
+	```
 
-Create a `.env` file in both the project root and `server/` directory. Use `.env.example` as the template:
+3. **Configure environment variables** – see the [Environment Variables](#environment-variables) section below.
 
-```
-PORT=5000
-MONGO_URI=mongodb://127.0.0.1:27017/tap-attendance
-JWT_SECRET=replace-with-secure-secret
-JWT_EXPIRES_IN=7d
-CORS_ORIGINS=http://localhost:5173
-OFFICE_START_HOUR=9
-LATE_THRESHOLD_MINUTES=15
+4. **Seed the database (optional but recommended)**
 
-VITE_API_URL=http://localhost:5000/api
-```
+	```bash
+	cd server
+	npm run seed
+	```
 
-### 3. Seed development data
+	The seed script provisions one manager plus multiple sample employees with realistic attendance patterns.
 
-```bash
-cd server
-npm run seed
-```
+5. **Start both servers** – follow [How to Run](#how-to-run) for dev/prod modes.
 
-This will create sample employees and a manager:
+## Environment Variables
 
-| Role     | Email              | Password       |
-|----------|--------------------|----------------|
-| Manager  | manager@example.com| Password123!   |
-| Employee | alice@example.com  | Password123!   |
-| Employee | bob@example.com    | Password123!   |
+Create `.env` files in both the project root and `server/` folders. Use `.env.example` as a reference.
 
-### 4. Start the backend
+| Location  | Variable | Description |
+|-----------|----------|-------------|
+| `server/.env` | `PORT` | Express API port (default `5000`) |
+|             | `MONGO_URI` | MongoDB connection string |
+|             | `JWT_SECRET` | Secret for signing JWTs |
+|             | `JWT_EXPIRES_IN` | Token lifetime (e.g. `7d`) |
+|             | `CORS_ORIGINS` | Comma-separated origins allowed to call the API |
+|             | `OFFICE_START_HOUR` | Workday start hour in 24h format (IST) |
+|             | `LATE_THRESHOLD_MINUTES` | Minutes after start hour considered late |
+| `./.env`   | `VITE_API_URL` | Frontend base URL to call the API (e.g. `http://localhost:5000/api`) |
 
-```bash
-cd server
-npm run dev
-```
+> **Tip:** keep secrets out of version control. Duplicate `.env.example` to ensure teammates know the required keys.
 
-The API is served at `http://localhost:5000/api`.
+## How to Run
 
-### 5. Start the frontend
+| Task | Command | Notes |
+|------|---------|-------|
+| Start backend dev server | `cd server && npm run dev` | Uses Nodemon at `http://localhost:5000/api` |
+| Start frontend dev server | `npm run dev` | Vite dev server on `http://localhost:5173` |
+| Build frontend for production | `npm run build` | Outputs static assets to `dist/` |
+| Preview production build | `npm run preview` | Serves the `dist/` bundle locally |
+| Seed database | `cd server && npm run seed` | Wipes & reseeds Mongo with curated data |
+| Lint (frontend) | `npm run lint` | Runs ESLint on React app |
 
-```bash
-cd ..
-npm run dev
-```
+When running locally, start MongoDB first, then run both dev servers in parallel.
 
-The React client runs on `http://localhost:5173` by default.
+## Sample Credentials
+
+| Role | Email | Password |
+|------|-------|----------|
+| Manager | `manager@example.com` | `Password123!` |
+| Employee | `alice@example.com` | `Password123!` |
+| Employee | `bob@example.com` | `Password123!` |
 
 ## API Overview
 
@@ -134,24 +141,30 @@ All authenticated requests expect a bearer token (stored automatically after log
 - Manager dashboards with weekly trend and department charts
 - Team attendance filters, calendar drill-down, and CSV report export
 
-## Scripts
-
-| Command              | Location | Purpose                    |
-|----------------------|----------|----------------------------|
-| `npm run dev`        | root     | Start Vite dev server      |
-| `npm run build`      | root     | Build production frontend  |
-| `npm run dev`        | server   | Start Express with nodemon |
-| `npm run seed`       | server   | Seed sample data           |
-
 ## Testing & QA
 
 - Ensure MongoDB is running locally before starting the backend.
-- Run the seed script after every database reset to populate sample data.
-- Use the sample credentials to verify both employee and manager flows.
+- Run `npm run seed` after clearing the DB to restore realistic attendance data.
+- Use the sample credentials above to verify employee vs manager UX.
+- `npm run lint` keeps the frontend consistent with project rules.
 
 ## Screenshots
 
-Add screenshots of the dashboards once you deploy or capture UI states. Place them in `public/` and reference here.
+Place UI captures inside `public/screenshots/` (or any static asset folder) and update the references below. Example:
+
+```
+public/
+	screenshots/
+		employee-dashboard.png
+		manager-dashboard.png
+```
+
+```markdown
+![Employee Dashboard](public/screenshots/employee-dashboard.png)
+![Manager Dashboard](public/screenshots/manager-dashboard.png)
+```
+
+Replace the image paths with actual screenshots from your deployment to document the UX for stakeholders.
 
 ---
 
