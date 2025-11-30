@@ -11,7 +11,7 @@ const COOKIE_OPTIONS = {
   maxAge: 7 * 24 * 60 * 60 * 1000,
 }
 
-const { maxAge, ...CLEAR_COOKIE_OPTIONS } = COOKIE_OPTIONS
+const { maxAge: _COOKIE_MAX_AGE, ...CLEAR_COOKIE_OPTIONS } = COOKIE_OPTIONS
 
 function handleValidation(req, res) {
   const errors = validationResult(req)

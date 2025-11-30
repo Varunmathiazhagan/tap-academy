@@ -12,7 +12,7 @@ const safeStorage = {
     if (!hasWindow) return null
     try {
       return window.localStorage.getItem(key)
-    } catch (_error) {
+    } catch {
       return null
     }
   },
@@ -20,14 +20,16 @@ const safeStorage = {
     if (!hasWindow) return
     try {
       window.localStorage.setItem(key, value)
-    } catch (_error) {
+    } catch {
+      // Ignore storage failures (private browsing, etc.)
     }
   },
   remove(key) {
     if (!hasWindow) return
     try {
       window.localStorage.removeItem(key)
-    } catch (_error) {
+    } catch {
+      // Ignore storage failures (private browsing, etc.)
     }
   },
 }
@@ -37,7 +39,7 @@ const readJson = (key) => {
   if (!raw) return null
   try {
     return JSON.parse(raw)
-  } catch (_error) {
+  } catch {
     return null
   }
 }

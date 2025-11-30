@@ -7,7 +7,7 @@ import StatusBadge from '../components/common/StatusBadge'
 import LoadingSpinner, { DashboardSkeleton } from '../components/common/LoadingSpinner'
 import ModernCard, { NotificationCard } from '../components/common/ModernCard'
 import AnimatedButton from '../components/common/AnimatedButton'
-import GlassCard, { GlassPanel, GlassStatCard } from '../components/common/GlassCard'
+import { GlassPanel, GlassStatCard } from '../components/common/GlassCard'
 import { DualFloatingButtons } from '../components/attendance/FloatingCheckButton'
 import AttendanceTimeline from '../components/attendance/AttendanceTimeline'
 import AttendanceHeatmap from '../components/attendance/AttendanceHeatmap'
@@ -308,6 +308,17 @@ export default function MarkAttendance() {
 
   const resetTimeline = () => setSelectedRecord(null)
 
+  const todaysDateLabel = useMemo(
+    () =>
+      currentTime.toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+      }),
+    [currentTime]
+  )
+
   // Show skeleton loading during initial data fetch
   if (initialLoading) {
     return (
@@ -370,107 +381,78 @@ export default function MarkAttendance() {
           )}
         </AnimatePresence>
 
-        {/* Neo Glass Hero Section */}
-        <motion.div
-          className="relative overflow-hidden"
+        {/* Hero Section aligned with dashboard styling */}
+        <motion.section
+          className="rounded-3xl border border-slate-800 bg-slate-950/80 p-6 shadow-2xl"
           variants={itemVariants}
         >
-          {/* Floating Background */}
-          <div className="absolute inset-0 gradient-bg-dark" />
-          <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-br from-cyan-400/30 via-blue-500/20 to-purple-600/30 rounded-full blur-3xl -translate-y-40 translate-x-40" />
-          <div className="absolute bottom-0 left-0 w-60 h-60 bg-gradient-to-tr from-pink-500/20 via-purple-500/20 to-blue-500/30 rounded-full blur-2xl translate-y-30 -translate-x-30" />
-          
-          <GlassCard
-            neonColor="cyan"
-            intensity="ultra"
-            className="glass-morphism-ultra backdrop-blur-3xl border-cyan-400/20"
-            floating={true}
-          >
-            <div className="p-4 sm:p-6 md:p-8 text-center">
-              <motion.h1
-                className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 text-gradient-neon"
-                initial={{ y: -20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.2 }}
-              >
-                Mark Your Attendance
-              </motion.h1>
-              <motion.p
-                className="text-white/80 text-sm sm:text-base md:text-lg"
-                initial={{ y: -20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.3 }}
-              >
-                {new Date().toLocaleDateString('en-US', { 
-                  weekday: 'long', 
-                  month: 'long', 
-                  day: 'numeric', 
-                  year: 'numeric' 
-                })}
-              </motion.p>
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+            <div className="space-y-4 text-left">
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Today</p>
+              <h1 className="text-3xl font-bold text-white">Mark Your Attendance</h1>
+              <p className="text-sm text-slate-300">{todaysDateLabel}</p>
+              <div className="flex flex-col gap-4 text-left sm:flex-row sm:items-center">
+                <DualFloatingButtons
+                  onCheckIn={handleCheckIn}
+                  onCheckOut={handleCheckOut}
+                  hasCheckedIn={Boolean(today?.checkInTime)}
+                  hasCheckedOut={Boolean(today?.checkOutTime)}
+                  loading={loading}
+                />
+                <div className="rounded-2xl border border-emerald-400/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
+                  <p className="font-semibold">{statusLabel}</p>
+                  <p className="text-emerald-200/80 text-xs">{statusMessage}</p>
+                </div>
+              </div>
             </div>
 
-          {/* Floating Check Buttons */}
-          <motion.div
-            className="mb-8"
-            initial={{ y: 50, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.4, type: "spring", stiffness: 200 }}
-          >
-            <DualFloatingButtons
-              onCheckIn={handleCheckIn}
-              onCheckOut={handleCheckOut}
-              hasCheckedIn={Boolean(today?.checkInTime)}
-              hasCheckedOut={Boolean(today?.checkOutTime)}
-              loading={loading}
+            <div className="w-full max-w-sm space-y-4">
+              <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Next milestone</p>
+                <p className="mt-2 text-3xl font-bold text-white">{officeStartLabel}</p>
+                <p className="text-xs text-slate-400">Late status begins after {lateCutoffLabel}</p>
+              </div>
+              <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4 text-sm text-slate-200">
+                <p className="font-semibold text-white">Need a reminder?</p>
+                <p className="mt-1 text-slate-300">Enable browser notifications to nudge you near check-out.</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-8 grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
+            <GlassStatCard
+              title="Current Status"
+              value={<StatusBadge status={today?.status ?? 'not-checked-in'} />}
+              neonColor="emerald"
+              delay={0}
+              icon="🟢"
             />
-          </motion.div>
-
-            {/* Neo Glass Status Grid */}
-            <div className="grid gap-3 sm:gap-4 md:gap-6 grid-cols-2 lg:grid-cols-4 mt-6 sm:mt-8">
-              <GlassStatCard
-                title="Current Status"
-                value={<StatusBadge status={today?.status ?? 'not-checked-in'} />}
-                neonColor="emerald"
-                delay={0}
-                icon="🟢"
-              />
-              
-              <GlassStatCard
-                title="Check In Time"
-                value={today?.checkInTime ? 
-                  new Date(today.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                  : '—'
-                }
-                description={today?.checkInTime ? 'Arrived on time' : 'Not checked in'}
-                neonColor="sky"
-                delay={1}
-                icon="⏰"
-              />
-              
-              <GlassStatCard
-                title="Check Out Time"
-                value={today?.checkOutTime ? 
-                  new Date(today.checkOutTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                  : '—'
-                }
-                description={today?.checkOutTime ? 'Day completed' : 'Still working'}
-                neonColor="purple"
-                delay={2}
-                icon="🚪"
-              />
-              
-              <GlassStatCard
-                title="Work Hours"
-                value={`${getWorkHours()} hrs`}
-                description="Today's total"
-                neonColor="amber"
-                delay={3}
-                icon="⚡"
-              />
-            </div>
-          </GlassCard>
-        </motion.div>
+            <GlassStatCard
+              title="Check In Time"
+              value={today?.checkInTime ? new Date(today.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
+              description={today?.checkInTime ? 'Arrived on time' : 'Not checked in'}
+              neonColor="sky"
+              delay={1}
+              icon="⏰"
+            />
+            <GlassStatCard
+              title="Check Out Time"
+              value={today?.checkOutTime ? new Date(today.checkOutTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
+              description={today?.checkOutTime ? 'Day completed' : 'Still working'}
+              neonColor="purple"
+              delay={2}
+              icon="🚪"
+            />
+            <GlassStatCard
+              title="Work Hours"
+              value={`${getWorkHours()} hrs`}
+              description="Today's total"
+              neonColor="amber"
+              delay={3}
+              icon="⚡"
+            />
+          </div>
+        </motion.section>
 
         {/* Today's Status Capsule */}
         <motion.section
