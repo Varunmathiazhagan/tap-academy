@@ -26,10 +26,10 @@ export default function ModernCard({
   return (
     <motion.div
       className={clsx(
-        'rounded-xl sm:rounded-2xl border transition-all duration-300 relative',
+        'rounded-xl border transition-all duration-300 relative',
         glass 
           ? 'glass glass-hover border-white/20' 
-          : 'bg-slate-900/40 border-slate-700/40 shadow-lg text-white',
+          : 'bg-slate-900/60 border-slate-800 shadow-card text-white',
         hover && 'card-lift hover:shadow-card-hover',
         paddings[padding],
         className
