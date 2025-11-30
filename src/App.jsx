@@ -21,7 +21,7 @@ import { fetchCurrentUser } from './features/auth/authSlice'
 
 function App() {
   const dispatch = useDispatch()
-  const { token, user } = useSelector((state) => state.auth)
+  const { token } = useSelector((state) => state.auth)
 
   useEffect(() => {
     if (token) {

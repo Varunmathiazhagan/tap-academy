@@ -76,7 +76,9 @@ export default function RealTimePresenceMap({ records = [] }) {
                 <h3 className="mt-1 text-2xl font-semibold text-white">Real-time Presence Map</h3>
               </div>
             </div>
-            <p className="mt-2 text-sm text-slate-400">Live avatars of everyone who checked in today.</p>
+            <p className="mt-2 text-sm text-slate-400">
+              Live avatars of everyone who checked in today · Updated {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </p>
           </div>
           
           <motion.span 
@@ -133,6 +135,7 @@ export default function RealTimePresenceMap({ records = [] }) {
                     isActive={isActive}
                     checkInDistance={checkInDistance}
                     index={index}
+                    statusLabel={statusLabel}
                   />
                 )
               })
@@ -193,7 +196,7 @@ export default function RealTimePresenceMap({ records = [] }) {
 /**
  * Individual Presence Card Component
  */
-function PresenceCard({ record, isActive, checkInDistance, index }) {
+function PresenceCard({ record, isActive, checkInDistance, index, statusLabel }) {
   const avatarGradient = getAvatarColor(record?.user?.name)
   
   return (
@@ -270,7 +273,10 @@ function PresenceCard({ record, isActive, checkInDistance, index }) {
               </svg>
               {checkInDistance}
             </span>
-            <StatusBadge status={record?.status || 'present'} />
+            <div className="flex items-center gap-2">
+              <StatusBadge status={record?.status || 'present'} />
+              <span className="text-[11px] uppercase tracking-wide text-slate-500">{statusLabel}</span>
+            </div>
           </div>
         </div>
       </div>

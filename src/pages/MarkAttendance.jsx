@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { motion, AnimatePresence } from 'framer-motion'
 import clsx from 'clsx'
-import DashboardLayout from '../components/layout/DashboardLayout'
+import DashboardLayout from '../components/layout/DashboardLayout' // No change needed
 import StatusBadge from '../components/common/StatusBadge'
 import LoadingSpinner from '../components/common/LoadingSpinner'
 import ModernCard, { NotificationCard } from '../components/common/ModernCard'
@@ -13,6 +13,8 @@ import AttendanceTimeline from '../components/attendance/AttendanceTimeline'
 import AttendanceHeatmap from '../components/attendance/AttendanceHeatmap'
 import ConfettiCelebration from '../components/common/ConfettiCelebration'
 import { loadToday, performCheckIn, performCheckOut, loadHistory } from '../features/attendance/attendanceSlice'
+
+const WEEKDAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
 const links = [
   { to: '/employee/dashboard', label: 'Dashboard' },
@@ -28,6 +30,7 @@ export default function MarkAttendance() {
   
   // State for celebrations and notifications
   const [showSuccess, setShowSuccess] = useState(false)
+  const [lastAction, setLastAction] = useState(null) // 'checkin' or 'checkout'
   const [showEarlyBirdCelebration, setShowEarlyBirdCelebration] = useState(false)
   const [selectedRecord, setSelectedRecord] = useState(null)
 
@@ -36,27 +39,43 @@ export default function MarkAttendance() {
     dispatch(loadHistory({ limit: 120 }))
   }, [dispatch])
 
-  const handleCheckIn = () => {
-    dispatch(performCheckIn()).then(() => {
-      dispatch(loadToday())
+  const handleCheckIn = async () => {
+    try {
+      const result = await dispatch(performCheckIn())
       
-      // Show early bird celebration if checked in before 9 AM
-      const now = new Date()
-      if (now.getHours() < 9) {
-        setShowEarlyBirdCelebration(true)
+      // Check if the action was fulfilled (not rejected)
+      if (performCheckIn.fulfilled.match(result)) {
+        dispatch(loadToday())
+        
+        // Show early bird celebration if checked in before 9 AM
+        const now = new Date()
+        if (now.getHours() < 9) {
+          setShowEarlyBirdCelebration(true)
+        }
+        
+        setLastAction('checkin')
+        setShowSuccess(true)
+        setTimeout(() => setShowSuccess(false), 3000)
       }
-      
-      setShowSuccess(true)
-      setTimeout(() => setShowSuccess(false), 3000)
-    })
+    } catch (err) {
+      console.error('Check-in failed:', err)
+    }
   }
 
-  const handleCheckOut = () => {
-    dispatch(performCheckOut()).then(() => {
-      dispatch(loadToday())
-      setShowSuccess(true)
-      setTimeout(() => setShowSuccess(false), 3000)
-    })
+  const handleCheckOut = async () => {
+    try {
+      const result = await dispatch(performCheckOut())
+      
+      // Check if the action was fulfilled (not rejected)
+      if (performCheckOut.fulfilled.match(result)) {
+        dispatch(loadToday())
+        setLastAction('checkout')
+        setShowSuccess(true)
+        setTimeout(() => setShowSuccess(false), 3000)
+      }
+    } catch (err) {
+      console.error('Check-out failed:', err)
+    }
   }
 
   const getWorkHours = () => {
@@ -136,15 +155,13 @@ export default function MarkAttendance() {
     return totalHours / last30Records.length
   }, [last30Records])
 
-  const weekdayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-
   const aiInsights = useMemo(() => {
     const insights = []
     if (bestWeekdayIndex !== null) {
-      insights.push(`You were more punctual on ${weekdayNames[bestWeekdayIndex]}s this month.`)
+      insights.push(`You were more punctual on ${WEEKDAY_NAMES[bestWeekdayIndex]}s this month.`)
     }
     if (lateSpikeDayIndex !== null && weekdayStats[lateSpikeDayIndex].late > 0) {
-      insights.push(`Late arrivals cluster on ${weekdayNames[lateSpikeDayIndex]}s — try prepping earlier the night before.`)
+      insights.push(`Late arrivals cluster on ${WEEKDAY_NAMES[lateSpikeDayIndex]}s — try prepping earlier the night before.`)
     }
     if (avgHours > 0) {
       insights.push(`Average workday lasted ${avgHours.toFixed(1)} hours over the last 30 days.`)
@@ -273,7 +290,7 @@ export default function MarkAttendance() {
             <NotificationCard
               type="success"
               title="Success!"
-              message={today?.checkOutTime ? "Successfully checked out!" : "Successfully checked in!"}
+              message={lastAction === 'checkout' ? "Successfully checked out!" : "Successfully checked in!"}
               onClose={() => setShowSuccess(false)}
             />
           )}

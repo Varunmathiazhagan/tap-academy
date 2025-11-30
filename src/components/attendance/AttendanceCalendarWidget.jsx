@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { 
   format, 
   startOfMonth, 
@@ -36,13 +36,15 @@ export default function AttendanceCalendarWidget({
   const startDate = startOfWeek(monthStart)
   const endDate = endOfWeek(monthEnd)
 
-  const days = []
-  let day = startDate
-
-  while (day <= endDate) {
-    days.push(day)
-    day = addDays(day, 1)
-  }
+  const days = useMemo(() => {
+    const grid = []
+    let cursor = startDate
+    while (cursor <= endDate) {
+      grid.push(cursor)
+      cursor = addDays(cursor, 1)
+    }
+    return grid
+  }, [startDate, endDate])
 
   // Navigate months
   const nextMonth = () => {
@@ -60,10 +62,10 @@ export default function AttendanceCalendarWidget({
   }
 
   // Get attendance status for a date
-  const getAttendanceStatus = (date) => {
+  const getAttendanceStatus = useCallback((date) => {
     const dateKey = format(date, 'yyyy-MM-dd')
     return attendanceData[dateKey]
-  }
+  }, [attendanceData])
 
   // Calculate stats
   const monthStats = useMemo(() => {
@@ -85,7 +87,7 @@ export default function AttendanceCalendarWidget({
       presentDays: presentDays.length,
       attendanceRate
     }
-  }, [days, currentMonth, attendanceData])
+  }, [days, currentMonth, getAttendanceStatus])
 
   const slideVariants = {
     enter: (direction) => ({

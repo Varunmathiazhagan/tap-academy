@@ -184,7 +184,6 @@ export function GlassStatCard({
   icon, 
   neonColor = 'sky', 
   trend,
-  animateValue = true,
   delay = 0 
 }) {
   return (
@@ -280,7 +279,6 @@ export function GlassStatCard({
 export function GlassButton({
   children,
   variant = 'primary',
-  neonColor = 'sky',
   size = 'md',
   disabled = false,
   loading = false,

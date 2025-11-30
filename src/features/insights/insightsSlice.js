@@ -222,10 +222,9 @@ export const selectComputedInsights = createSelector(
 // Memoized selector for computing recommendations
 export const selectComputedRecommendations = createSelector(
   [
-    (state) => state.dashboard.employee.data?.recent || [],
-    (state) => state.dashboard.employee.data?.summary || {}
+    (state) => state.dashboard.employee.data?.recent || []
   ],
-  (records, summary) => {
+  (records) => {
     const recommendations = []
 
     // Calculate stats
