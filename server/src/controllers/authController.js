@@ -20,11 +20,14 @@ function handleValidation(req, res) {
 
 export async function register(req, res) {
   handleValidation(req, res)
-  let { name, email, password, role, employeeId, department } = req.body
+  let { name, email, password, employeeId, department } = req.body
 
   // Normalize inputs
   email = String(email).trim().toLowerCase()
   employeeId = String(employeeId).trim().toUpperCase()
+  const normalizedDepartment = String(department).trim()
+  const normalizedName = String(name).trim()
+  const normalizedRole = 'employee'
 
   const existingUser = await User.findOne({ $or: [{ email }, { employeeId }] })
   if (existingUser) {
@@ -35,12 +38,12 @@ export async function register(req, res) {
   const hashedPassword = await bcrypt.hash(password, 10)
 
   const user = await User.create({
-    name,
+    name: normalizedName,
     email,
     password: hashedPassword,
-    role,
+    role: normalizedRole,
     employeeId,
-    department,
+    department: normalizedDepartment,
   })
 
   const token = generateToken(user._id)

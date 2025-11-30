@@ -53,6 +53,7 @@ export default function AttendanceHistory() {
                     onChange={(event) => setSelectedMonth(event.target.value)}
                     className="mt-1 rounded-lg border border-cyan-500/30 bg-slate-900/80 px-3 py-2 text-sm font-medium text-white outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30"
                   />
+                </div>
               </div>
 
               {/* Status Chips */}

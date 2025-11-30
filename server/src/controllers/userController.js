@@ -10,7 +10,13 @@ export async function getAllUsers(req, res) {
 }
 
 export async function getUserById(req, res) {
-  const user = await User.findById(req.params.id)
+  const requestedId = req.params.id
+
+  if (req.user.role !== 'manager' && req.user.id !== requestedId) {
+    return res.status(403).json({ message: 'Forbidden' })
+  }
+
+  const user = await User.findById(requestedId)
     .select('name email employeeId department role createdAt')
     .lean()
 

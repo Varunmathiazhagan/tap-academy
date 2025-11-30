@@ -24,10 +24,10 @@ function App() {
   const { token, user } = useSelector((state) => state.auth)
 
   useEffect(() => {
-    if (token && !user) {
+    if (token) {
       dispatch(fetchCurrentUser())
     }
-  }, [dispatch, token, user])
+  }, [dispatch, token])
 
   return (
     <Routes>

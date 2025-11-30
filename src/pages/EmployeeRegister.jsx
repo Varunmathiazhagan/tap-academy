@@ -29,7 +29,7 @@ export default function EmployeeRegister() {
 
   const handleSubmit = (event) => {
     event.preventDefault()
-    dispatch(registerUser({ ...formState, role: 'employee' }))
+    dispatch(registerUser(formState))
   }
 
   return (

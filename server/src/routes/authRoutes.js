@@ -9,7 +9,6 @@ const registerValidation = [
   body('name').notEmpty().withMessage('Name is required'),
   body('email').isEmail().withMessage('Valid email is required'),
   body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
-  body('role').isIn(['employee', 'manager']).withMessage('Role must be employee or manager'),
   body('employeeId').notEmpty().withMessage('Employee ID is required'),
   body('department').notEmpty().withMessage('Department is required'),
 ]
