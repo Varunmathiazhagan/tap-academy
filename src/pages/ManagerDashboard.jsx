@@ -63,6 +63,8 @@ export default function ManagerDashboard() {
   }, [dispatch])
 
   const data = manager.data
+  const isHoliday = Boolean(data?.today?.isHoliday)
+  const holidayCount = data?.today?.holidayCount || 0
 
   // Calculate advanced metrics
   const analytics = useMemo(() => {
@@ -129,6 +131,27 @@ export default function ManagerDashboard() {
           initial="hidden"
           animate="visible"
         >
+          {/* Holiday Banner */}
+          {isHoliday && (
+            <motion.div
+              className="flex flex-col gap-3 rounded-2xl border border-purple-500/40 bg-purple-500/10 p-4 text-purple-100 shadow-lg shadow-purple-900/30"
+              variants={itemVariants}
+            >
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-500/30 text-2xl">
+                  🎉
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-[0.3em] text-purple-200/90">Company-wide notice</p>
+                  <h2 className="text-xl font-semibold text-white">Today is an official holiday</h2>
+                </div>
+              </div>
+              <p className="text-sm text-purple-100/90">
+                Attendance tracking is paused. {holidayCount > 0 ? `${holidayCount} team member${holidayCount === 1 ? '' : 's'} already marked as holiday.` : 'Enjoy the break!'}
+              </p>
+            </motion.div>
+          )}
+
           {/* Top KPI Cards */}
           <motion.div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 section-shell p-4" variants={itemVariants}>
             <EnhancedStatCard
@@ -146,7 +169,7 @@ export default function ManagerDashboard() {
               title="Present Today"
               value={data.today.present}
               percentage={data.totalEmployees > 0 ? ((data.today.present / data.totalEmployees) * 100).toFixed(0) : 0}
-              subtitle="Checked in"
+              subtitle={isHoliday ? 'Company holiday' : 'Checked in'}
               trend={3}
               trendLabel="vs yesterday"
               neonColor="emerald"
@@ -244,7 +267,9 @@ export default function ManagerDashboard() {
           <motion.div className="rounded-2xl border border-slate-700/60 bg-slate-900/90 p-6 backdrop-blur-xl shadow-xl" variants={itemVariants}>
             <h3 className="text-lg font-semibold text-white">Absent Employees Today</h3>
             <div className="mt-4 grid gap-3 text-sm text-slate-300 grid-cols-1 sm:grid-cols-2">
-              {data.absentEmployees.length === 0 ? (
+              {isHoliday ? (
+                <p className="col-span-full text-purple-200">Company holiday in effect. No absences expected.</p>
+              ) : data.absentEmployees.length === 0 ? (
                 <p>Everyone has checked in today.</p>
               ) : (
                 data.absentEmployees.map((employee) => (

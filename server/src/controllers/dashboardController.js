@@ -108,10 +108,16 @@ export async function managerDashboard(req, res) {
     ]),
   ])
 
-  const presentToday = todayRecords.filter((record) => record.status === 'present' || record.status === 'late' || record.status === 'half-day').length
-  const absentToday = employees.length - presentToday
   const lateToday = todayRecords.filter((record) => record.status === 'late').map((record) => record.user)
-  const absentList = employees.filter((employee) => !todayRecords.some((record) => String(record.user._id) === String(employee._id)))
+  const holidayRecords = todayRecords.filter((record) => record.status === 'holiday')
+  const attendanceUserIds = new Set(todayRecords.map((record) => String(record.user?._id || record.user)))
+  const hasOnlyHolidayRecords = todayRecords.length > 0 && holidayRecords.length === todayRecords.length
+  const isCompanyHoliday = hasOnlyHolidayRecords
+  const presentToday = todayRecords.filter((record) => record.status === 'present' || record.status === 'late' || record.status === 'half-day').length
+  const absentList = isCompanyHoliday
+    ? []
+    : employees.filter((employee) => !attendanceUserIds.has(String(employee._id)))
+  const absentToday = absentList.length
 
   const weeklyDayMap = new Map()
 
@@ -164,6 +170,8 @@ export async function managerDashboard(req, res) {
       present: presentToday,
       absent: absentToday,
       late: lateToday,
+      holidayCount: holidayRecords.length,
+      isHoliday: isCompanyHoliday,
     },
     weeklyTrend,
     departmentStats: departmentStats.map((item) => ({
