@@ -274,29 +274,6 @@ export default function EmployeeLogin() {
               </motion.button>
             </motion.form>
 
-            {/* Demo Credentials */}
-            <motion.div 
-              className="relative mt-5 sm:mt-8 rounded-xl border border-sky-400/30 bg-sky-950/50 p-3 sm:p-4"
-              variants={itemVariants}
-            >
-              <div className="mb-2 sm:mb-3 flex items-center gap-2 text-[10px] sm:text-xs font-bold uppercase tracking-wide text-sky-300">
-                <svg className="h-3.5 w-3.5 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                Demo Credentials
-              </div>
-              <div className="grid gap-2 sm:gap-3 font-mono text-[10px] xs:text-[11px] sm:text-xs grid-cols-1 sm:grid-cols-2">
-                <div className="space-y-1 sm:space-y-1.5 rounded-lg bg-slate-900/60 p-2 sm:p-2.5 md:p-3">
-                  <p className="text-slate-100 truncate"><span className="text-sky-400/80">Email:</span> liam.brooks@tapacademy.com</p>
-                  <p className="text-slate-100"><span className="text-sky-400/80">Pass:</span> Password123!</p>
-                </div>
-                <div className="space-y-1 sm:space-y-1.5 rounded-lg bg-slate-900/60 p-2 sm:p-2.5 md:p-3">
-                  <p className="text-slate-100 truncate"><span className="text-sky-400/80">Email:</span> elena.rossi@tapacademy.com</p>
-                  <p className="text-slate-100"><span className="text-sky-400/80">Pass:</span> Password123!</p>
-                </div>
-              </div>
-            </motion.div>
-
             {/* Footer Links */}
             <motion.div 
               className="relative mt-5 sm:mt-8 space-y-3 sm:space-y-4 border-t border-slate-700/50 pt-4 sm:pt-6"

@@ -57,10 +57,10 @@ export default function QuickActionPanel({
               }
               setShowLeaveForm(true)
             }}
-            className="group flex items-center gap-3 rounded-xl border border-slate-700 bg-gradient-to-r from-slate-800/50 to-slate-900/50 p-4 text-left transition hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/10"
+            className="group flex items-center gap-3 rounded-2xl border border-white/10 bg-slate-900/30 p-4 text-left transition hover:border-purple-400/40 hover:bg-slate-900/60"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-500/10">
-              <svg className="h-5 w-5 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-500/10">
+              <svg className="h-5 w-5 text-purple-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
             </div>
@@ -68,17 +68,17 @@ export default function QuickActionPanel({
               <p className="font-semibold text-white">Request Leave</p>
               <p className="text-xs text-slate-400">Submit time-off request</p>
             </div>
-            <svg className="h-5 w-5 text-slate-500 transition group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="h-5 w-5 text-slate-400 transition group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </button>
 
           <button
             type="button"
-            className="group flex items-center gap-3 rounded-xl border border-slate-700 bg-gradient-to-r from-slate-800/50 to-slate-900/50 p-4 text-left transition hover:border-sky-500/50 hover:shadow-lg hover:shadow-sky-500/10"
+            className="group flex items-center gap-3 rounded-2xl border border-white/10 bg-slate-900/30 p-4 text-left transition hover:border-sky-400/40 hover:bg-slate-900/60"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-sky-500/10">
-              <svg className="h-5 w-5 text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500/10">
+              <svg className="h-5 w-5 text-sky-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </div>
@@ -86,7 +86,7 @@ export default function QuickActionPanel({
               <p className="font-semibold text-white">View Reports</p>
               <p className="text-xs text-slate-400">Monthly attendance summary</p>
             </div>
-            <svg className="h-5 w-5 text-slate-500 transition group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="h-5 w-5 text-slate-400 transition group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </button>
@@ -145,10 +145,10 @@ function WeeklyProgressBar({ data = [] }) {
   const weekProgress = (presentDays / 7) * 100
 
   return (
-    <div className="rounded-xl border border-slate-800/70 bg-gradient-to-br from-slate-900/40 to-slate-950/60 p-5 backdrop-blur-sm">
+    <div className="rounded-2xl border border-white/10 bg-slate-900/30 p-5 backdrop-blur-xl">
       <div className="mb-4 flex items-center justify-between">
-        <p className="text-sm font-bold text-gradient-aurora">This Week's Progress</p>
-        <span className="text-xs font-semibold text-cyan-300">{presentDays}/7 days</span>
+        <p className="text-sm font-semibold text-slate-100">This Week's Progress</p>
+        <span className="text-xs font-semibold text-cyan-200">{presentDays}/7 days</span>
       </div>
 
       {/* Day indicators */}
