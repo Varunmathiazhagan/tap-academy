@@ -10,16 +10,22 @@ const COOKIE_OPTIONS = {
   maxAge: 7 * 24 * 60 * 60 * 1000,
 }
 
+const { maxAge, ...CLEAR_COOKIE_OPTIONS } = COOKIE_OPTIONS
+
 function handleValidation(req, res) {
   const errors = validationResult(req)
   if (!errors.isEmpty()) {
-    res.status(400)
-    throw new Error(errors.array().map((error) => error.msg).join(', '))
+    res.status(400).json({
+      message: errors.array().map((error) => error.msg).join(', '),
+      errors: errors.array()
+    })
+    return false
   }
+  return true
 }
 
 export async function register(req, res) {
-  handleValidation(req, res)
+  if (!handleValidation(req, res)) return
   let { name, email, password, employeeId, department } = req.body
 
   // Normalize inputs
@@ -31,8 +37,7 @@ export async function register(req, res) {
 
   const existingUser = await User.findOne({ $or: [{ email }, { employeeId }] })
   if (existingUser) {
-    res.status(400)
-    throw new Error('User with this email or employee ID already exists')
+    return res.status(400).json({ message: 'User with this email or employee ID already exists' })
   }
 
   const hashedPassword = await bcrypt.hash(password, 10)
@@ -63,20 +68,18 @@ export async function register(req, res) {
 }
 
 export async function login(req, res) {
-  handleValidation(req, res)
+  if (!handleValidation(req, res)) return
   let { email, password } = req.body
   email = String(email).trim().toLowerCase()
 
   const user = await User.findOne({ email })
   if (!user) {
-    res.status(401)
-    throw new Error('Invalid credentials')
+    return res.status(401).json({ message: 'Invalid credentials' })
   }
 
   const isMatch = await bcrypt.compare(password, user.password)
   if (!isMatch) {
-    res.status(401)
-    throw new Error('Invalid credentials')
+    return res.status(401).json({ message: 'Invalid credentials' })
   }
 
   const token = generateToken(user._id)
@@ -101,6 +104,6 @@ export async function me(req, res) {
 }
 
 export function logout(req, res) {
-  res.clearCookie('token', COOKIE_OPTIONS)
+  res.clearCookie('token', CLEAR_COOKIE_OPTIONS)
   res.json({ message: 'Logged out' })
 }

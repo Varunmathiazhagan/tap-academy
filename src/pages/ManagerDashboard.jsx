@@ -129,7 +129,7 @@ export default function ManagerDashboard() {
           animate="visible"
         >
           {/* Top KPI Cards */}
-          <motion.div className="grid gap-4 md:grid-cols-5 section-shell" variants={itemVariants}>
+          <motion.div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 section-shell p-4" variants={itemVariants}>
             <EnhancedStatCard
               title="Total Employees"
               value={data.totalEmployees}
@@ -204,19 +204,19 @@ export default function ManagerDashboard() {
           </motion.div>
 
           {/* Charts Grid */}
-          <motion.div className="grid gap-6 lg:grid-cols-2 section-shell" variants={itemVariants}>
+          <motion.div className="grid gap-6 grid-cols-1 lg:grid-cols-2" variants={itemVariants}>
             <WeeklyAttendanceGraph data={data.weeklyTrend || []} />
             <DepartmentAttendanceGraph data={data.departmentStats || []} />
           </motion.div>
 
-          <motion.div className="grid gap-6 lg:grid-cols-2 section-shell" variants={itemVariants}>
+          <motion.div className="grid gap-6 grid-cols-1 lg:grid-cols-2" variants={itemVariants}>
             <LateArrivalsTrendGraph 
               data={data.weeklyTrend?.map(day => ({
                 date: day.date,
                 count: day.late || 0
               })) || []}
             />
-            <div className="rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900/60 to-slate-900/40 p-6 shadow-xl">
+            <div className="rounded-2xl border border-slate-700/60 bg-slate-900/90 p-6 shadow-xl backdrop-blur-xl">
               <h3 className="text-lg font-semibold text-white">Monthly Heatmap</h3>
               <p className="text-sm text-slate-400">Department performance overview</p>
               <div className="mt-4">
@@ -225,7 +225,7 @@ export default function ManagerDashboard() {
             </div>
           </motion.div>
 
-          <motion.div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 section-shell" variants={itemVariants}>
+          <motion.div className="rounded-2xl border border-slate-700/60 bg-slate-900/90 p-6 backdrop-blur-xl shadow-xl" variants={itemVariants}>
             <h3 className="text-lg font-semibold text-white">Late Arrivals Today</h3>
             <div className="mt-3 flex flex-wrap gap-3">
               {data.today.late.length === 0 ? (
@@ -240,14 +240,14 @@ export default function ManagerDashboard() {
             </div>
           </motion.div>
 
-          <motion.div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 section-shell" variants={itemVariants}>
+          <motion.div className="rounded-2xl border border-slate-700/60 bg-slate-900/90 p-6 backdrop-blur-xl shadow-xl" variants={itemVariants}>
             <h3 className="text-lg font-semibold text-white">Absent Employees Today</h3>
-            <div className="mt-4 grid gap-3 text-sm text-slate-300 md:grid-cols-2">
+            <div className="mt-4 grid gap-3 text-sm text-slate-300 grid-cols-1 sm:grid-cols-2">
               {data.absentEmployees.length === 0 ? (
                 <p>Everyone has checked in today.</p>
               ) : (
                 data.absentEmployees.map((employee) => (
-                  <div key={employee.employeeId} className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/80 px-4 py-3">
+                  <div key={employee.employeeId} className="flex items-center justify-between rounded-xl border border-slate-700/50 bg-slate-800/80 px-4 py-3">
                     <div>
                       <p className="font-medium text-white">{employee.name}</p>
                       <p className="text-xs text-slate-400">{employee.employeeId} • {employee.department}</p>
@@ -259,15 +259,15 @@ export default function ManagerDashboard() {
             </div>
           </motion.div>
 
-          <motion.div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 section-shell" variants={itemVariants}>
+          <motion.div className="rounded-2xl border border-slate-700/60 bg-slate-900/90 p-6 backdrop-blur-xl shadow-xl" variants={itemVariants}>
             <h3 className="text-lg font-semibold text-white">Live Check-ins</h3>
             <p className="text-sm text-slate-400">Employees who have checked in today</p>
-            <div className="mt-4 grid gap-3 text-sm text-slate-300 md:grid-cols-2">
+            <div className="mt-4 grid gap-3 text-sm text-slate-300 grid-cols-1 sm:grid-cols-2">
               {!today || today.length === 0 ? (
                 <p>No check-ins recorded yet.</p>
               ) : (
                 today.map((record) => (
-                  <div key={record._id} className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/80 px-4 py-3">
+                  <div key={record._id} className="flex items-center justify-between rounded-xl border border-slate-700/50 bg-slate-800/80 px-4 py-3">
                     <div>
                       <p className="font-medium text-white">{record.user.name}</p>
                       <p className="text-xs text-slate-400">{record.user.employeeId} • {record.user.department}</p>

@@ -117,23 +117,23 @@ export default function AIAlerts({ attendanceData = [], employees = [], departme
   return (
     <div className="space-y-4">
       {/* Summary Stats */}
-      <div className="grid grid-cols-3 gap-3">
-        <GlassCard neonColor="rose" className="p-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <GlassCard neonColor="rose" className="p-4" intensity="medium">
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Critical</p>
           <p className="mt-2 text-2xl font-bold text-rose-300">{criticalAlerts.length}</p>
         </GlassCard>
-        <GlassCard neonColor="amber" className="p-4">
+        <GlassCard neonColor="amber" className="p-4" intensity="medium">
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Action Needed</p>
           <p className="mt-2 text-2xl font-bold text-amber-300">{actionableAlerts.length}</p>
         </GlassCard>
-        <GlassCard neonColor="emerald" className="p-4">
+        <GlassCard neonColor="emerald" className="p-4" intensity="medium">
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Insights</p>
           <p className="mt-2 text-2xl font-bold text-emerald-300">{alerts.length}</p>
         </GlassCard>
       </div>
 
       {/* Alert List */}
-      <div className="rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900/60 to-slate-900/40 p-6 shadow-xl">
+      <div className="rounded-2xl border border-slate-700/60 bg-slate-900/90 p-6 shadow-xl backdrop-blur-xl">
         <div className="mb-4 flex items-center justify-between">
           <h3 className="text-lg font-bold text-white">AI-Powered Insights</h3>
           <span className="rounded-full bg-purple-500/20 px-3 py-1 text-xs font-semibold text-purple-300">

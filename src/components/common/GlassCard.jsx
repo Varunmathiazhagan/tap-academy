@@ -19,10 +19,10 @@ export default function GlassCard({
   const [isHovered, setIsHovered] = useState(false)
 
   const intensityClasses = {
-    light: 'glass-morphism backdrop-blur-lg',
-    medium: 'glass-morphism-light backdrop-blur-xl',
-    strong: 'glass-morphism-light backdrop-blur-2xl bg-white/15',
-    ultra: 'glass-morphism-light backdrop-blur-3xl bg-white/20',
+    light: 'bg-slate-900/80 backdrop-blur-lg border-slate-700/50',
+    medium: 'bg-slate-900/90 backdrop-blur-xl border-slate-700/60',
+    strong: 'bg-slate-900/95 backdrop-blur-2xl border-slate-700/70',
+    ultra: 'bg-slate-950/95 backdrop-blur-3xl border-slate-700/80',
   }
 
   const neonColorClasses = {
@@ -127,14 +127,14 @@ export function GlassPanel({
         <motion.div 
           className={clsx(
             'p-6 relative',
-            headerGradient ? 'gradient-bg-cyber' : 'bg-white/5'
+            headerGradient ? 'bg-gradient-to-r from-slate-800/90 via-slate-800/80 to-slate-900/90' : 'bg-slate-800/50'
           )}
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.1 }}
         >
           {headerGradient && (
-            <div className="absolute inset-0 bg-gradient-to-r from-black/20 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-purple-500/10" />
           )}
           
           <div className="relative flex items-center justify-between">
