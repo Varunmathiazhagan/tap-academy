@@ -393,7 +393,7 @@ export default function MarkAttendance() {
 
         {/* Hero Section aligned with dashboard styling */}
         <motion.section
-          className="rounded-3xl border border-slate-800 bg-slate-950/80 p-6 shadow-2xl"
+          className="rounded-2xl sm:rounded-3xl border border-slate-700/40 bg-slate-950/40 p-4 sm:p-5 md:p-6 shadow-xl"
           variants={itemVariants}
         >
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
@@ -416,13 +416,13 @@ export default function MarkAttendance() {
               </div>
             </div>
 
-            <div className="w-full max-w-sm space-y-4">
-              <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
+            <div className="w-full max-w-sm space-y-3 sm:space-y-4">
+              <div className="rounded-xl sm:rounded-2xl border border-slate-700/40 bg-transparent p-3 sm:p-4">
                 <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Next milestone</p>
-                <p className="mt-2 text-3xl font-bold text-white">{officeStartLabel}</p>
+                <p className="mt-1 sm:mt-2 text-2xl sm:text-3xl font-bold text-white">{officeStartLabel}</p>
                 <p className="text-xs text-slate-400">Late status begins after {lateCutoffLabel}</p>
               </div>
-              <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4 text-sm text-slate-200">
+              <div className="rounded-xl sm:rounded-2xl border border-slate-700/40 bg-transparent p-3 sm:p-4 text-sm text-slate-200">
                 <p className="font-semibold text-white">Need a reminder?</p>
                 <p className="mt-1 text-slate-300">Enable browser notifications to nudge you near check-out.</p>
               </div>
@@ -467,7 +467,7 @@ export default function MarkAttendance() {
         {/* Today's Status Capsule */}
         <motion.section
           className={clsx(
-            'relative overflow-hidden rounded-[40px] border border-slate-800/80 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-900/80 p-8 shadow-[0_20px_60px_rgba(15,23,42,0.6)] status-capsule section-shell',
+            'relative overflow-hidden rounded-2xl sm:rounded-[40px] border border-slate-700/40 bg-gradient-to-br from-slate-950/40 via-slate-900/30 to-transparent p-4 sm:p-6 md:p-8 shadow-lg status-capsule section-shell',
             isLateArrival && 'status-capsule-late'
           )}
           variants={itemVariants}
@@ -516,9 +516,9 @@ export default function MarkAttendance() {
                   value: `${getWorkHours()} hrs`,
                   accent: 'sky',
                 }].map((item) => (
-                  <div key={item.label} className="rounded-xl sm:rounded-2xl border border-white/5 bg-white/5 p-3 sm:p-4 backdrop-blur">
-                    <p className="text-xs uppercase tracking-widest text-slate-400">{item.label}</p>
-                    <p className="mt-1 sm:mt-2 text-xl sm:text-2xl font-semibold text-white">{item.value}</p>
+                  <div key={item.label} className="rounded-lg sm:rounded-xl border border-white/10 bg-transparent p-2 sm:p-3 md:p-4">
+                    <p className="text-[10px] sm:text-xs uppercase tracking-widest text-slate-400">{item.label}</p>
+                    <p className="mt-0.5 sm:mt-1 md:mt-2 text-lg sm:text-xl md:text-2xl font-semibold text-white">{item.value}</p>
                   </div>
                 ))}
               </div>
@@ -532,7 +532,7 @@ export default function MarkAttendance() {
                   <span className="status-clock-hand status-clock-hand--minutes" />
                 </div>
               )}
-              <div className="rounded-2xl sm:rounded-3xl border border-white/10 bg-white/5 px-4 sm:px-6 py-4 sm:py-5 text-center sm:text-right w-full sm:w-auto">
+              <div className="rounded-xl sm:rounded-2xl md:rounded-3xl border border-white/10 bg-transparent px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-5 text-center sm:text-right w-full sm:w-auto">
                 <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Next milestone</p>
                 <p className="mt-2 sm:mt-3 text-2xl sm:text-3xl font-bold text-white">{officeStartLabel}</p>
                 <p className="text-xs sm:text-sm text-slate-400">Target check-in</p>
@@ -568,7 +568,7 @@ export default function MarkAttendance() {
               </div>
               <div className="flex-1 space-y-4 sm:space-y-5">
                 <div className="grid gap-3 sm:gap-4 grid-cols-1 xs:grid-cols-3 sm:grid-cols-3">
-                  {[{
+                    {[{
                     label: 'On-time days',
                     value: punctualDays,
                     tone: 'text-emerald-300'
@@ -581,13 +581,13 @@ export default function MarkAttendance() {
                     value: absentDays,
                     tone: 'text-rose-300'
                   }].map((stat) => (
-                    <div key={stat.label} className="rounded-xl sm:rounded-2xl border border-white/5 bg-white/5 p-3 sm:p-4">
-                      <p className="text-xs uppercase tracking-widest text-slate-400">{stat.label}</p>
-                      <p className={clsx('mt-1 sm:mt-2 text-2xl sm:text-3xl font-bold', stat.tone)}>{stat.value}</p>
+                    <div key={stat.label} className="rounded-lg sm:rounded-xl border border-white/10 bg-transparent p-2 sm:p-3 md:p-4">
+                      <p className="text-[10px] sm:text-xs uppercase tracking-widest text-slate-400">{stat.label}</p>
+                      <p className={clsx('mt-0.5 sm:mt-1 md:mt-2 text-xl sm:text-2xl md:text-3xl font-bold', stat.tone)}>{stat.value}</p>
                     </div>
                   ))}
                 </div>
-                <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+                <div className="rounded-xl sm:rounded-2xl border border-slate-700/30 bg-transparent p-3 sm:p-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">A.I. powered insights</p>
                   <ul className="mt-3 space-y-2 text-sm text-slate-200">
                     {aiInsights.map((insight, index) => (
@@ -611,7 +611,7 @@ export default function MarkAttendance() {
           >
             <div className="space-y-4">
               {recommendations.map((item) => (
-                <div key={item.title} className="rounded-2xl border border-pink-400/20 bg-pink-500/5 p-4">
+                <div key={item.title} className="rounded-xl sm:rounded-2xl border border-pink-400/20 bg-transparent p-3 sm:p-4">
                   <div className="flex items-center justify-between">
                     <h4 className="text-base font-semibold text-white">{item.title}</h4>
                     <span className="text-xs uppercase tracking-widest text-pink-300">{item.badge}</span>
@@ -633,7 +633,7 @@ export default function MarkAttendance() {
             />
           </div>
           <div className="xl:col-span-2 space-y-4">
-            <div className="flex items-center justify-between rounded-2xl border border-slate-800/80 bg-slate-950/40 px-5 py-4">
+            <div className="flex items-center justify-between rounded-xl sm:rounded-2xl border border-slate-700/40 bg-transparent px-3 sm:px-4 md:px-5 py-3 sm:py-4">
               <div>
                 <p className="text-xs uppercase tracking-widest text-slate-400">Timeline focus</p>
                 <p className="text-lg font-semibold text-white">{selectedRecord ? formatISTDate(selectedRecord.date || selectedRecord.checkInTime) : 'Today'}</p>

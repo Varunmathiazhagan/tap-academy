@@ -126,11 +126,13 @@ export default function ManagerLogin() {
           animate="visible"
         >
           <motion.div 
-            className="relative rounded-2xl sm:rounded-3xl border border-purple-500/30 bg-slate-950 p-5 sm:p-8 md:p-10 shadow-2xl shadow-purple-950/30 backdrop-blur-xl"
+            className="relative rounded-2xl sm:rounded-3xl border border-purple-500/20 bg-slate-950/80 p-5 sm:p-8 md:p-10 shadow-2xl shadow-purple-950/30 backdrop-blur-xl"
             variants={itemVariants}
           >
             {/* Decorative glow */}
-            <div className="pointer-events-none absolute -inset-px rounded-2xl sm:rounded-3xl bg-gradient-to-b from-purple-500/30 via-purple-500/5 to-transparent" />
+            <div className="pointer-events-none absolute -inset-px rounded-2xl sm:rounded-3xl bg-gradient-to-b from-purple-500/20 via-purple-500/5 to-transparent" />
+            {/* Grid pattern overlay */}
+            <div className="pointer-events-none absolute inset-0 rounded-2xl sm:rounded-3xl bg-[linear-gradient(to_right,rgba(139,92,246,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(139,92,246,0.02)_1px,transparent_1px)] bg-[size:2rem_2rem]" />
             
             {/* Header Section */}
             <motion.div className="relative space-y-3 sm:space-y-4 text-center" variants={itemVariants}>
@@ -285,9 +287,9 @@ export default function ManagerLogin() {
                 </svg>
                 Demo Credentials
               </div>
-              <div className="space-y-1 sm:space-y-1.5 rounded-lg bg-slate-900/80 p-2.5 sm:p-3 font-mono text-[11px] sm:text-xs">
-                <p className="text-slate-100"><span className="text-purple-400/80">Email:</span> amelia.grant@tapacademy.com</p>
-                <p className="text-slate-100"><span className="text-purple-400/80">Alt:</span> darius.cole@tapacademy.com</p>
+              <div className="space-y-1 sm:space-y-1.5 rounded-lg bg-slate-900/60 p-2 sm:p-2.5 md:p-3 font-mono text-[10px] xs:text-[11px] sm:text-xs">
+                <p className="text-slate-100 truncate"><span className="text-purple-400/80">Email:</span> amelia.grant@tapacademy.com</p>
+                <p className="text-slate-100 truncate"><span className="text-purple-400/80">Alt:</span> darius.cole@tapacademy.com</p>
                 <p className="text-slate-100"><span className="text-purple-400/80">Pass:</span> Password123!</p>
               </div>
             </motion.div>

@@ -124,11 +124,13 @@ export default function EmployeeLogin() {
           animate="visible"
         >
           <motion.div 
-            className="relative rounded-2xl sm:rounded-3xl border border-sky-500/30 bg-slate-950 p-5 sm:p-8 md:p-10 shadow-2xl shadow-sky-950/30 backdrop-blur-xl"
+            className="relative rounded-2xl sm:rounded-3xl border border-sky-500/20 bg-slate-950/80 p-5 sm:p-8 md:p-10 shadow-2xl shadow-sky-950/30 backdrop-blur-xl"
             variants={itemVariants}
           >
             {/* Decorative glow */}
-            <div className="pointer-events-none absolute -inset-px rounded-2xl sm:rounded-3xl bg-gradient-to-b from-sky-500/30 via-sky-500/5 to-transparent" />
+            <div className="pointer-events-none absolute -inset-px rounded-2xl sm:rounded-3xl bg-gradient-to-b from-sky-500/20 via-sky-500/5 to-transparent" />
+            {/* Grid pattern overlay */}
+            <div className="pointer-events-none absolute inset-0 rounded-2xl sm:rounded-3xl bg-[linear-gradient(to_right,rgba(56,189,248,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(56,189,248,0.02)_1px,transparent_1px)] bg-[size:2rem_2rem]" />
             
             {/* Header Section */}
             <motion.div className="relative space-y-3 sm:space-y-4 text-center" variants={itemVariants}>
@@ -283,13 +285,13 @@ export default function EmployeeLogin() {
                 </svg>
                 Demo Credentials
               </div>
-              <div className="grid gap-2 sm:gap-3 font-mono text-[11px] sm:text-xs sm:grid-cols-2">
-                <div className="space-y-1 sm:space-y-1.5 rounded-lg bg-slate-900/80 p-2.5 sm:p-3">
-                  <p className="text-slate-100"><span className="text-sky-400/80">Email:</span> liam.brooks@tapacademy.com</p>
+              <div className="grid gap-2 sm:gap-3 font-mono text-[10px] xs:text-[11px] sm:text-xs grid-cols-1 sm:grid-cols-2">
+                <div className="space-y-1 sm:space-y-1.5 rounded-lg bg-slate-900/60 p-2 sm:p-2.5 md:p-3">
+                  <p className="text-slate-100 truncate"><span className="text-sky-400/80">Email:</span> liam.brooks@tapacademy.com</p>
                   <p className="text-slate-100"><span className="text-sky-400/80">Pass:</span> Password123!</p>
                 </div>
-                <div className="space-y-1 sm:space-y-1.5 rounded-lg bg-slate-900/80 p-2.5 sm:p-3">
-                  <p className="text-slate-100"><span className="text-sky-400/80">Email:</span> elena.rossi@tapacademy.com</p>
+                <div className="space-y-1 sm:space-y-1.5 rounded-lg bg-slate-900/60 p-2 sm:p-2.5 md:p-3">
+                  <p className="text-slate-100 truncate"><span className="text-sky-400/80">Email:</span> elena.rossi@tapacademy.com</p>
                   <p className="text-slate-100"><span className="text-sky-400/80">Pass:</span> Password123!</p>
                 </div>
               </div>

@@ -19,10 +19,10 @@ export default function GlassCard({
   const [isHovered, setIsHovered] = useState(false)
 
   const intensityClasses = {
-    light: 'bg-slate-900/80 backdrop-blur-lg border-slate-700/50',
-    medium: 'bg-slate-900/90 backdrop-blur-xl border-slate-700/60',
-    strong: 'bg-slate-900/95 backdrop-blur-2xl border-slate-700/70',
-    ultra: 'bg-slate-950/95 backdrop-blur-3xl border-slate-700/80',
+    light: 'bg-transparent backdrop-blur-lg border-slate-700/30',
+    medium: 'bg-slate-900/40 backdrop-blur-xl border-slate-700/40',
+    strong: 'bg-slate-900/50 backdrop-blur-2xl border-slate-700/50',
+    ultra: 'bg-slate-950/60 backdrop-blur-3xl border-slate-700/60',
   }
 
   const neonColorClasses = {
@@ -126,8 +126,8 @@ export function GlassPanel({
       {(title || icon) && (
         <motion.div 
           className={clsx(
-            'p-6 relative',
-            headerGradient ? 'bg-gradient-to-r from-slate-800/90 via-slate-800/80 to-slate-900/90' : 'bg-slate-800/50'
+            'p-4 sm:p-5 md:p-6 relative',
+            headerGradient ? 'bg-gradient-to-r from-slate-800/40 via-slate-800/30 to-slate-900/40' : 'bg-transparent'
           )}
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -167,7 +167,7 @@ export function GlassPanel({
         </motion.div>
       )}
       
-      <div className="p-6">
+      <div className="p-4 sm:p-5 md:p-6">
         {children}
       </div>
     </GlassCard>
@@ -189,9 +189,9 @@ export function GlassStatCard({
   return (
     <GlassCard 
       neonColor={neonColor} 
-      className="p-4 sm:p-5 md:p-6 relative overflow-hidden"
-      intensity="medium"
-      gradient={true}
+      className="p-3 sm:p-4 md:p-5 relative overflow-hidden"
+      intensity="light"
+      gradient={false}
       floating={true}
     >
       <div className="flex items-start justify-between gap-3">

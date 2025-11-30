@@ -32,11 +32,11 @@ export default function AttendanceHeatmap({ records = [], year = new Date().getF
   }
 
   return (
-    <div className="space-y-6 rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900/60 to-slate-900/40 p-6 shadow-xl">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6 rounded-2xl border border-slate-700/40 bg-gradient-to-br from-slate-900/30 to-transparent p-4 sm:p-5 md:p-6 shadow-xl">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
-          <h3 className="text-xl font-bold text-white">Attendance Heatmap</h3>
-          <p className="mt-1 text-sm text-slate-400">Your attendance activity for {year}</p>
+          <h3 className="text-lg sm:text-xl font-bold text-white">Attendance Heatmap</h3>
+          <p className="mt-1 text-xs sm:text-sm text-slate-400">Your attendance activity for {year}</p>
         </div>
         {/* Legend */}
         <div className="flex items-center gap-3 text-xs">
@@ -53,7 +53,7 @@ export default function AttendanceHeatmap({ records = [], year = new Date().getF
       </div>
 
       {/* Heatmap Grid */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
         {months.map((monthStart) => {
           const monthEnd = endOfMonth(monthStart)
           const days = eachDayOfInterval({ start: monthStart, end: monthEnd })
@@ -80,7 +80,7 @@ export default function AttendanceHeatmap({ records = [], year = new Date().getF
           })
 
           return (
-            <div key={monthStart.toISOString()} className="rounded-xl border border-slate-800 bg-slate-900/30 p-4">
+            <div key={monthStart.toISOString()} className="rounded-xl border border-slate-700/30 bg-transparent p-3 sm:p-4">
               <h4 className="mb-3 text-sm font-bold text-white">{format(monthStart, 'MMMM')}</h4>
               
               <div className="space-y-1">
@@ -127,34 +127,34 @@ export default function AttendanceHeatmap({ records = [], year = new Date().getF
       </div>
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-2 gap-4 border-t border-slate-800 pt-6 md:grid-cols-5">
-        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-center">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4 border-t border-slate-700/30 pt-4 sm:pt-6">
+        <div className="rounded-xl border border-emerald-500/20 bg-transparent p-3 sm:p-4 text-center">
           <p className="text-xs font-semibold uppercase tracking-wider text-emerald-400">Present</p>
-          <p className="mt-2 text-2xl font-bold text-emerald-300">
+          <p className="mt-1 sm:mt-2 text-xl sm:text-2xl font-bold text-emerald-300">
             {records.filter((r) => r.status === 'present').length}
           </p>
         </div>
-        <div className="rounded-xl border border-yellow-500/30 bg-yellow-500/10 p-4 text-center">
+        <div className="rounded-xl border border-yellow-500/20 bg-transparent p-3 sm:p-4 text-center">
           <p className="text-xs font-semibold uppercase tracking-wider text-yellow-400">Late</p>
-          <p className="mt-2 text-2xl font-bold text-yellow-300">
+          <p className="mt-1 sm:mt-2 text-xl sm:text-2xl font-bold text-yellow-300">
             {records.filter((r) => r.status === 'late').length}
           </p>
         </div>
-        <div className="rounded-xl border border-orange-500/30 bg-orange-500/10 p-4 text-center">
+        <div className="rounded-xl border border-orange-500/20 bg-transparent p-3 sm:p-4 text-center">
           <p className="text-xs font-semibold uppercase tracking-wider text-orange-400">Half Day</p>
-          <p className="mt-2 text-2xl font-bold text-orange-300">
+          <p className="mt-1 sm:mt-2 text-xl sm:text-2xl font-bold text-orange-300">
             {records.filter((r) => r.status === 'half-day').length}
           </p>
         </div>
-        <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-center">
+        <div className="rounded-xl border border-rose-500/20 bg-transparent p-3 sm:p-4 text-center">
           <p className="text-xs font-semibold uppercase tracking-wider text-rose-400">Absent</p>
-          <p className="mt-2 text-2xl font-bold text-rose-300">
+          <p className="mt-1 sm:mt-2 text-xl sm:text-2xl font-bold text-rose-300">
             {records.filter((r) => r.status === 'absent').length}
           </p>
         </div>
-        <div className="rounded-xl border border-sky-500/30 bg-sky-500/10 p-4 text-center">
+        <div className="rounded-xl border border-sky-500/20 bg-transparent p-3 sm:p-4 text-center">
           <p className="text-xs font-semibold uppercase tracking-wider text-sky-400">Total Days</p>
-          <p className="mt-2 text-2xl font-bold text-sky-300">{records.length}</p>
+          <p className="mt-1 sm:mt-2 text-xl sm:text-2xl font-bold text-sky-300">{records.length}</p>
         </div>
       </div>
     </div>

@@ -58,10 +58,10 @@ export default function AttendanceTimeline({ record, currentTime = new Date() })
   return (
     <motion.div 
       className={clsx(
-        "space-y-6 rounded-2xl border p-6 shadow-xl",
+        "space-y-4 sm:space-y-6 rounded-2xl border p-4 sm:p-5 md:p-6 shadow-xl",
         isLate 
-          ? "border-rose-500/50 bg-gradient-to-br from-rose-900/30 via-slate-900/60 to-slate-900/40 shadow-rose-500/20" 
-          : "border-slate-800 bg-gradient-to-br from-slate-900/60 to-slate-900/40"
+          ? "border-rose-500/30 bg-gradient-to-br from-rose-900/20 via-slate-900/30 to-transparent" 
+          : "border-slate-700/40 bg-gradient-to-br from-slate-900/30 to-transparent"
       )}
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
@@ -243,8 +243,8 @@ export default function AttendanceTimeline({ record, currentTime = new Date() })
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-3 gap-4">
-        <div className="rounded-xl border border-slate-800 bg-slate-900/50 p-4 text-center">
+      <div className="grid grid-cols-1 xs:grid-cols-3 gap-3 sm:gap-4">
+        <div className="rounded-xl border border-slate-700/40 bg-transparent p-3 sm:p-4 text-center">
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Status</p>
           <div className="mt-2">
             <span className={clsx(
@@ -259,17 +259,17 @@ export default function AttendanceTimeline({ record, currentTime = new Date() })
           </div>
         </div>
 
-        <div className="rounded-xl border border-slate-800 bg-slate-900/50 p-4 text-center">
+        <div className="rounded-xl border border-slate-700/40 bg-transparent p-3 sm:p-4 text-center">
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Break Time</p>
-          <p className="mt-2 text-lg font-bold text-white">
+          <p className="mt-1 sm:mt-2 text-base sm:text-lg font-bold text-white">
             {/* Placeholder for future break tracking */}
             0 min
           </p>
         </div>
 
-        <div className="rounded-xl border border-slate-800 bg-slate-900/50 p-4 text-center">
+        <div className="rounded-xl border border-slate-700/40 bg-transparent p-3 sm:p-4 text-center">
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Hours</p>
-          <p className="mt-2 text-lg font-bold text-white">
+          <p className="mt-1 sm:mt-2 text-base sm:text-lg font-bold text-white">
             {record.totalHours?.toFixed(2) || workDuration.toFixed(2)}
           </p>
         </div>
