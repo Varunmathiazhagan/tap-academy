@@ -3,13 +3,53 @@ import { authApi } from '../../api/authApi'
 
 const tokenKey = 'accessToken'
 const userKey = 'authUser'
+const settingsKey = 'attendanceSettings'
 
-const persistedToken = localStorage.getItem(tokenKey) || null
-const persistedUser = localStorage.getItem(userKey)
+const hasWindow = typeof window !== 'undefined'
+
+const safeStorage = {
+  get(key) {
+    if (!hasWindow) return null
+    try {
+      return window.localStorage.getItem(key)
+    } catch (_error) {
+      return null
+    }
+  },
+  set(key, value) {
+    if (!hasWindow) return
+    try {
+      window.localStorage.setItem(key, value)
+    } catch (_error) {
+    }
+  },
+  remove(key) {
+    if (!hasWindow) return
+    try {
+      window.localStorage.removeItem(key)
+    } catch (_error) {
+    }
+  },
+}
+
+const readJson = (key) => {
+  const raw = safeStorage.get(key)
+  if (!raw) return null
+  try {
+    return JSON.parse(raw)
+  } catch (_error) {
+    return null
+  }
+}
+
+const persistedToken = safeStorage.get(tokenKey) || null
+const persistedUser = readJson(userKey)
+const persistedSettings = readJson(settingsKey)
 
 const initialState = {
-  user: persistedUser ? JSON.parse(persistedUser) : null,
+  user: persistedUser,
   token: persistedToken,
+  settings: persistedSettings,
   status: 'idle',
   error: null,
 }
@@ -59,8 +99,12 @@ const authSlice = createSlice({
         state.status = 'succeeded'
         state.user = action.payload.user
         state.token = action.payload.token
-        localStorage.setItem(tokenKey, action.payload.token)
-        localStorage.setItem(userKey, JSON.stringify(action.payload.user))
+        if (action.payload.settings) {
+          state.settings = action.payload.settings
+          safeStorage.set(settingsKey, JSON.stringify(action.payload.settings))
+        }
+        safeStorage.set(tokenKey, action.payload.token)
+        safeStorage.set(userKey, JSON.stringify(action.payload.user))
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.status = 'failed'
@@ -74,8 +118,12 @@ const authSlice = createSlice({
         state.status = 'succeeded'
         state.user = action.payload.user
         state.token = action.payload.token
-        localStorage.setItem(tokenKey, action.payload.token)
-        localStorage.setItem(userKey, JSON.stringify(action.payload.user))
+        if (action.payload.settings) {
+          state.settings = action.payload.settings
+          safeStorage.set(settingsKey, JSON.stringify(action.payload.settings))
+        }
+        safeStorage.set(tokenKey, action.payload.token)
+        safeStorage.set(userKey, JSON.stringify(action.payload.user))
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.status = 'failed'
@@ -87,29 +135,39 @@ const authSlice = createSlice({
       .addCase(fetchCurrentUser.fulfilled, (state, action) => {
         state.status = 'succeeded'
         state.user = action.payload.user
-        localStorage.setItem(userKey, JSON.stringify(action.payload.user))
+        if (action.payload.settings) {
+          state.settings = action.payload.settings
+          safeStorage.set(settingsKey, JSON.stringify(action.payload.settings))
+        }
+        safeStorage.set(userKey, JSON.stringify(action.payload.user))
       })
       .addCase(fetchCurrentUser.rejected, (state, action) => {
         state.status = 'failed'
         state.error = action.payload
         state.user = null
         state.token = null
-        localStorage.removeItem(tokenKey)
-        localStorage.removeItem(userKey)
+        state.settings = null
+        safeStorage.removeItem(tokenKey)
+        safeStorage.removeItem(userKey)
+        safeStorage.removeItem(settingsKey)
       })
       .addCase(logoutUser.fulfilled, (state) => {
         state.user = null
         state.token = null
         state.status = 'idle'
-        localStorage.removeItem(tokenKey)
-        localStorage.removeItem(userKey)
+        state.settings = null
+        safeStorage.removeItem(tokenKey)
+        safeStorage.removeItem(userKey)
+        safeStorage.removeItem(settingsKey)
       })
       .addCase(logoutUser.rejected, (state) => {
         state.user = null
         state.token = null
         state.status = 'idle'
-        localStorage.removeItem(tokenKey)
-        localStorage.removeItem(userKey)
+        state.settings = null
+        safeStorage.removeItem(tokenKey)
+        safeStorage.removeItem(userKey)
+        safeStorage.removeItem(settingsKey)
       })
   },
 })

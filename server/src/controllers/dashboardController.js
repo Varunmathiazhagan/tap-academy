@@ -1,6 +1,15 @@
 import Attendance from '../models/Attendance.js'
 import User from '../models/User.js'
-import { startOfDay, endOfDay, startOfMonth, endOfMonth } from '../utils/date.js'
+import {
+  startOfDay,
+  endOfDay,
+  startOfMonth,
+  endOfMonth,
+  countWorkingDays,
+  isWorkingDay,
+  eachDayOfInterval,
+} from '../utils/date.js'
+import { attendanceSettings } from '../config/attendanceSettings.js'
 
 export async function employeeDashboard(req, res) {
   const today = new Date()
@@ -23,6 +32,24 @@ export async function employeeDashboard(req, res) {
     { present: 0, absent: 0, late: 0, ['half-day']: 0, totalHours: 0 }
   )
 
+  const todayStart = startOfDay(new Date())
+  const effectiveEnd = monthEnd < todayStart ? monthEnd : new Date(todayStart.getTime() - 1)
+
+  if (effectiveEnd >= monthStart) {
+    const workingDays = countWorkingDays(monthStart, effectiveEnd, attendanceSettings.workDays)
+    const trackedDays = new Set(
+      monthRecords
+        .filter((record) => {
+          const recordDay = startOfDay(record.date)
+          return recordDay <= effectiveEnd && isWorkingDay(recordDay, attendanceSettings.workDays)
+        })
+        .map((record) => startOfDay(record.date).getTime())
+    )
+
+    const missingDays = Math.max(0, workingDays - trackedDays.size)
+    summary.absent += missingDays
+  }
+
   res.json({
     todayStatus: todayRecord?.status || 'not-checked-in',
     summary,
@@ -34,25 +61,15 @@ export async function managerDashboard(req, res) {
   const today = new Date()
   const todayRange = { $gte: startOfDay(today), $lte: endOfDay(today) }
 
+  const weekRangeStart = startOfDay(new Date(today.getTime() - 6 * 24 * 60 * 60 * 1000))
+  const weekRangeEnd = endOfDay(today)
+
   const [employees, todayRecords, weekRecords, departmentStats] = await Promise.all([
     User.find({ role: 'employee' }).lean(),
     Attendance.find({ date: todayRange }).populate('user', 'name employeeId department').lean(),
-    Attendance.aggregate([
-      {
-        $match: {
-          date: {
-            $gte: startOfDay(new Date(today.getTime() - 6 * 24 * 60 * 60 * 1000)),
-            $lte: endOfDay(today),
-          },
-        },
-      },
-      {
-        $group: {
-          _id: { day: { $dateToString: { format: '%Y-%m-%d', date: '$date' } }, status: '$status' },
-          count: { $sum: 1 },
-        },
-      },
-    ]),
+    Attendance.find({ date: { $gte: weekRangeStart, $lte: weekRangeEnd } })
+      .select('date status user')
+      .lean(),
     Attendance.aggregate([
       {
         $lookup: {
@@ -96,16 +113,50 @@ export async function managerDashboard(req, res) {
   const lateToday = todayRecords.filter((record) => record.status === 'late').map((record) => record.user)
   const absentList = employees.filter((employee) => !todayRecords.some((record) => String(record.user._id) === String(employee._id)))
 
-  const weeklyTrend = weekRecords.reduce((acc, item) => {
-    if (!acc[item._id.day]) {
-      acc[item._id.day] = { date: item._id.day, present: 0, absent: 0, late: 0, halfDay: 0 }
+  const weeklyDayMap = new Map()
+
+  weekRecords.forEach((record) => {
+    const day = startOfDay(record.date)
+    const key = day.getTime()
+    if (!weeklyDayMap.has(key)) {
+      weeklyDayMap.set(key, {
+        date: day,
+        present: 0,
+        absent: 0,
+        late: 0,
+        halfDay: 0,
+        attendees: new Set(),
+      })
     }
-    if (item._id.status === 'present') acc[item._id.day].present += item.count
-    if (item._id.status === 'absent') acc[item._id.day].absent += item.count
-    if (item._id.status === 'late') acc[item._id.day].late += item.count
-    if (item._id.status === 'half-day') acc[item._id.day].halfDay += item.count
-    return acc
-  }, {})
+
+    const summary = weeklyDayMap.get(key)
+    summary.attendees.add(String(record.user))
+
+    if (record.status === 'present') summary.present += 1
+    if (record.status === 'late') summary.late += 1
+    if (record.status === 'half-day') summary.halfDay += 1
+    if (record.status === 'absent') summary.absent += 1
+  })
+
+  const weeklyTrend = eachDayOfInterval(weekRangeStart, today).map((day) => {
+    const key = startOfDay(day).getTime()
+    const summary = weeklyDayMap.get(key)
+    const trendEntry = {
+      date: day.toISOString().slice(0, 10),
+      present: summary?.present || 0,
+      late: summary?.late || 0,
+      halfDay: summary?.halfDay || 0,
+      absent: summary?.absent || 0,
+    }
+
+    if (isWorkingDay(day, attendanceSettings.workDays)) {
+      const attendees = summary?.attendees.size || 0
+      const inferredAbsences = Math.max(0, employees.length - attendees)
+      trendEntry.absent += inferredAbsences
+    }
+
+    return trendEntry
+  })
 
   res.json({
     totalEmployees: employees.length,
@@ -114,7 +165,7 @@ export async function managerDashboard(req, res) {
       absent: absentToday,
       late: lateToday,
     },
-    weeklyTrend: Object.values(weeklyTrend).sort((a, b) => (a.date > b.date ? 1 : -1)),
+    weeklyTrend,
     departmentStats: departmentStats.map((item) => ({
       department: item._id,
       present: item.present,

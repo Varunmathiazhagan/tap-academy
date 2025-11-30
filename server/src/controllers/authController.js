@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs'
 import { validationResult } from 'express-validator'
 import User from '../models/User.js'
 import { generateToken } from '../utils/token.js'
+import { attendanceSettings } from '../config/attendanceSettings.js'
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
@@ -64,6 +65,7 @@ export async function register(req, res) {
       department: user.department,
     },
     token,
+    settings: attendanceSettings,
   })
 }
 
@@ -95,12 +97,13 @@ export async function login(req, res) {
       department: user.department,
     },
     token,
+    settings: attendanceSettings,
   })
 }
 
 export async function me(req, res) {
   const user = await User.findById(req.user.id).select('-password').lean()
-  res.json({ user })
+  res.json({ user, settings: attendanceSettings })
 }
 
 export function logout(req, res) {

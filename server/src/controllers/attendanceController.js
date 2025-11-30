@@ -1,8 +1,17 @@
 import { validationResult } from 'express-validator'
-import { startOfDay, endOfDay, startOfMonth, endOfMonth } from '../utils/date.js'
+import {
+  startOfDay,
+  endOfDay,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  isWorkingDay,
+  countWorkingDays,
+} from '../utils/date.js'
 import Attendance from '../models/Attendance.js'
 import User from '../models/User.js'
 import { buildAttendanceCsv } from '../utils/csvExporter.js'
+import { attendanceSettings } from '../config/attendanceSettings.js'
 
 function handleValidation(req, res) {
   const errors = validationResult(req)
@@ -12,15 +21,15 @@ function handleValidation(req, res) {
   }
 }
 
-const OFFICE_START_HOUR = Number(process.env.OFFICE_START_HOUR || 9)
-const LATE_THRESHOLD_MINUTES = Number(process.env.LATE_THRESHOLD_MINUTES || 15)
-
 function determineStatus(checkInDate, checkOutDate) {
+  const { officeStartHour, lateThresholdMinutes } = attendanceSettings
   if (!checkInDate) {
     return 'absent'
   }
 
-  if (checkInDate.getHours() > OFFICE_START_HOUR || (checkInDate.getHours() === OFFICE_START_HOUR && checkInDate.getMinutes() > LATE_THRESHOLD_MINUTES)) {
+  const totalMinutes = checkInDate.getHours() * 60 + checkInDate.getMinutes()
+  const lateThreshold = officeStartHour * 60 + lateThresholdMinutes
+  if (totalMinutes > lateThreshold) {
     return 'late'
   }
 
@@ -32,6 +41,65 @@ function determineStatus(checkInDate, checkOutDate) {
   }
 
   return 'present'
+}
+
+function createVirtualAbsenceRecords(records, rangeStart, rangeEnd, userId) {
+  const todayStart = startOfDay(new Date())
+  const effectiveEnd = rangeEnd < todayStart ? rangeEnd : new Date(todayStart.getTime() - 1)
+
+  if (effectiveEnd < rangeStart) {
+    return []
+  }
+
+  const recordMap = new Map(
+    records.map((record) => [startOfDay(record.date).getTime(), record])
+  )
+
+  const virtualRecords = []
+
+  eachDayOfInterval(rangeStart, effectiveEnd).forEach((day) => {
+    if (!isWorkingDay(day, attendanceSettings.workDays)) return
+
+    const key = day.getTime()
+    if (recordMap.has(key)) return
+
+    virtualRecords.push({
+      _id: `virtual-${key}`,
+      user: userId,
+      date: day,
+      status: 'absent',
+      checkInTime: null,
+      checkOutTime: null,
+      totalHours: 0,
+      isVirtual: true,
+    })
+  })
+
+  return virtualRecords
+}
+
+function enhanceSummaryWithAbsences(summary, records, rangeStart, rangeEnd) {
+  const todayStart = startOfDay(new Date())
+  const effectiveEnd = rangeEnd < todayStart ? rangeEnd : new Date(todayStart.getTime() - 1)
+
+  if (effectiveEnd < rangeStart) {
+    return summary
+  }
+
+  const trackedDays = new Set(
+    records
+      .filter((record) => {
+        const recordDay = startOfDay(record.date)
+        return recordDay <= effectiveEnd && isWorkingDay(recordDay, attendanceSettings.workDays)
+      })
+      .map((record) => startOfDay(record.date).getTime())
+  )
+
+  const workingDays = countWorkingDays(rangeStart, effectiveEnd, attendanceSettings.workDays)
+  const unresolvedAbsences = Math.max(0, workingDays - trackedDays.size)
+
+  summary.absent = (summary.absent || 0) + unresolvedAbsences
+  return summary
 }
 
 export async function checkIn(req, res) {
@@ -60,9 +128,17 @@ export async function checkIn(req, res) {
   attendance.checkInTime = now
   attendance.status = determineStatus(now)
 
-  await attendance.save()
+  try {
+    await attendance.save()
+  } catch (error) {
+    if (error?.code === 11000) {
+      res.status(400)
+      throw new Error('Already checked in today')
+    }
+    throw error
+  }
 
-  res.status(201).json({ attendance })
+  res.status(existing ? 200 : 201).json({ attendance })
 }
 
 export async function checkOut(req, res) {
@@ -98,21 +174,28 @@ export async function checkOut(req, res) {
 
 export async function myHistory(req, res) {
   const month = req.query.month ? new Date(req.query.month) : new Date()
-  const records = await Attendance.find({
+  const monthStart = startOfMonth(month)
+  const monthEnd = endOfMonth(month)
+  const rawRecords = await Attendance.find({
     user: req.user.id,
-    date: { $gte: startOfMonth(month), $lte: endOfMonth(month) },
+    date: { $gte: monthStart, $lte: monthEnd },
   })
     .sort({ date: -1 })
     .lean()
+
+  const virtualRecords = createVirtualAbsenceRecords(rawRecords, monthStart, monthEnd, req.user.id)
+  const records = [...rawRecords, ...virtualRecords].sort((a, b) => new Date(b.date) - new Date(a.date))
 
   res.json({ records })
 }
 
 export async function mySummary(req, res) {
   const now = req.query.month ? new Date(req.query.month) : new Date()
+  const rangeStart = startOfMonth(now)
+  const rangeEnd = endOfMonth(now)
   const records = await Attendance.find({
     user: req.user.id,
-    date: { $gte: startOfMonth(now), $lte: endOfMonth(now) },
+    date: { $gte: rangeStart, $lte: rangeEnd },
   }).lean()
 
   const summary = records.reduce(
@@ -123,6 +206,8 @@ export async function mySummary(req, res) {
     },
     { present: 0, absent: 0, late: 0, ['half-day']: 0, totalHours: 0 }
   )
+
+  enhanceSummaryWithAbsences(summary, records, rangeStart, rangeEnd)
 
   res.json({ summary })
 }
@@ -205,24 +290,46 @@ export async function teamSummary(req, res) {
 
   const memberIds = teamMembers.map((member) => member._id)
   const now = req.query.month ? new Date(req.query.month) : new Date()
+  const rangeStart = startOfMonth(now)
+  const rangeEnd = endOfMonth(now)
 
-  const records = await Attendance.aggregate([
-    { $match: { user: { $in: memberIds }, date: { $gte: startOfMonth(now), $lte: endOfMonth(now) } } },
-    {
-      $group: {
-        _id: '$status',
-        count: { $sum: 1 },
-      },
-    },
-  ])
+  if (memberIds.length === 0) {
+    return res.json({ summary: { present: 0, absent: 0, late: 0, ['half-day']: 0 }, totalMembers: 0 })
+  }
 
-  const summary = records.reduce(
-    (acc, item) => {
-      acc[item._id] = item.count
+  const monthRecords = await Attendance.find({
+    user: { $in: memberIds },
+    date: { $gte: rangeStart, $lte: rangeEnd },
+  })
+    .select('user date status')
+    .lean()
+
+  const summary = monthRecords.reduce(
+    (acc, record) => {
+      if (acc[record.status] !== undefined) {
+        acc[record.status] += 1
+      }
       return acc
     },
     { present: 0, absent: 0, late: 0, ['half-day']: 0 }
   )
+
+  const todayStart = startOfDay(new Date())
+  const effectiveEnd = rangeEnd < todayStart ? rangeEnd : new Date(todayStart.getTime() - 1)
+
+  if (effectiveEnd >= rangeStart) {
+    const workingDays = countWorkingDays(rangeStart, effectiveEnd, attendanceSettings.workDays)
+    const expectedEntries = workingDays * teamMembers.length
+
+    const uniqueAttendance = new Set(
+      monthRecords
+        .filter((record) => startOfDay(record.date) <= effectiveEnd && isWorkingDay(record.date, attendanceSettings.workDays))
+        .map((record) => `${record.user.toString()}-${startOfDay(record.date).getTime()}`)
+    )
+
+    const missingEntries = Math.max(0, expectedEntries - uniqueAttendance.size)
+    summary.absent += missingEntries
+  }
 
   res.json({ summary, totalMembers: teamMembers.length })
 }

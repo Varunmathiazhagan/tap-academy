@@ -51,7 +51,22 @@ const links = [
 export default function MarkAttendance() {
   const dispatch = useDispatch()
   const { today, loading, error, history } = useSelector((state) => state.attendance)
-  const currentTime = new Date()
+  const attendanceSettings = useSelector((state) => state.auth.settings)
+  const [currentTime, setCurrentTime] = useState(() => new Date())
+
+  const officeStartHour = attendanceSettings?.officeStartHour ?? 9
+  const lateThresholdMinutes = attendanceSettings?.lateThresholdMinutes ?? 15
+
+  const formatTimeLabel = (hour, minute = 0) => {
+    const reference = new Date()
+    reference.setHours(hour, minute, 0, 0)
+    return reference.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  }
+
+  const lateOffsetHours = Math.floor(lateThresholdMinutes / 60)
+  const lateOffsetMinutes = lateThresholdMinutes % 60
+  const officeStartLabel = formatTimeLabel(officeStartHour, 0)
+  const lateCutoffLabel = formatTimeLabel(officeStartHour + lateOffsetHours, lateOffsetMinutes)
   
   // State for celebrations and notifications
   const [showSuccess, setShowSuccess] = useState(false)
@@ -79,9 +94,11 @@ export default function MarkAttendance() {
       if (performCheckIn.fulfilled.match(result)) {
         dispatch(loadToday())
         
-        // Show early bird celebration if checked in before 9 AM
+        // Show early bird celebration if checked in before configured office start
         const now = new Date()
-        if (now.getHours() < 9) {
+        const minutesSinceMidnight = now.getHours() * 60 + now.getMinutes()
+        const earlyBirdThreshold = officeStartHour * 60
+        if (minutesSinceMidnight < earlyBirdThreshold) {
           setShowEarlyBirdCelebration(true)
         }
         
@@ -123,8 +140,24 @@ export default function MarkAttendance() {
 
   const isCheckedIn = Boolean(today?.checkInTime)
   const isWorkingNow = isCheckedIn && !today?.checkOutTime
+  useEffect(() => {
+    if (!isWorkingNow) {
+      setCurrentTime(new Date())
+      return
+    }
+
+    const interval = setInterval(() => {
+      setCurrentTime(new Date())
+    }, 60000)
+
+    return () => clearInterval(interval)
+  }, [isWorkingNow])
+
   const checkInDate = today?.checkInTime ? new Date(today.checkInTime) : null
-  const isLateArrival = today?.status === 'late' || (checkInDate && (checkInDate.getHours() > 9 || (checkInDate.getHours() === 9 && checkInDate.getMinutes() > 5)))
+  const checkInMinutes = checkInDate ? checkInDate.getHours() * 60 + checkInDate.getMinutes() : null
+  const lateThresholdTotalMinutes = officeStartHour * 60 + lateThresholdMinutes
+  const isLateBySchedule = typeof checkInMinutes === 'number' ? checkInMinutes > lateThresholdTotalMinutes : false
+  const isLateArrival = today?.status === 'late' || isLateBySchedule
 
   const last30Records = useMemo(() => {
     const cutoff = new Date()
@@ -209,7 +242,7 @@ export default function MarkAttendance() {
       {
         title: 'Punctuality badge',
         badge: 'Goal',
-        body: 'Try checking in before 9:05 AM to earn a punctuality badge.',
+        body: `Try checking in before ${lateCutoffLabel} to earn a punctuality badge.`,
       },
     ]
 
@@ -242,7 +275,7 @@ export default function MarkAttendance() {
     }
 
     return list.slice(0, 3)
-  }, [avgHours, performanceScore])
+  }, [avgHours, performanceScore, lateCutoffLabel])
 
   const timelineRecord = selectedRecord || today
   const timelineCurrentTime = selectedRecord
@@ -265,7 +298,7 @@ export default function MarkAttendance() {
       ? today?.checkOutTime
         ? 'Great job closing the loop today.'
         : isLateArrival
-          ? 'Next target: arrive before 9:05 AM to stay green.'
+          ? `Next target: arrive before ${lateCutoffLabel} to stay green.`
           : 'You are all set. Keep your productivity streak alive!'
       : 'Tap the check-in button to start your day.'
 
@@ -509,7 +542,7 @@ export default function MarkAttendance() {
               )}
               <div className="rounded-2xl sm:rounded-3xl border border-white/10 bg-white/5 px-4 sm:px-6 py-4 sm:py-5 text-center sm:text-right w-full sm:w-auto">
                 <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Next milestone</p>
-                <p className="mt-2 sm:mt-3 text-2xl sm:text-3xl font-bold text-white">09:00 AM</p>
+                <p className="mt-2 sm:mt-3 text-2xl sm:text-3xl font-bold text-white">{officeStartLabel}</p>
                 <p className="text-xs sm:text-sm text-slate-400">Target check-in</p>
                 <AnimatedButton className="mt-3 sm:mt-4 w-full sm:w-auto" variant="primary">
                   View streaks
@@ -656,7 +689,7 @@ export default function MarkAttendance() {
                     {
                       icon: "⏰",
                       color: "text-amber-600",
-                      text: "Arrivals after 9:15 AM will be marked as late"
+                      text: `Arrivals after ${lateCutoffLabel} will be marked as late`
                     },
                     {
                       icon: "⚠️",
