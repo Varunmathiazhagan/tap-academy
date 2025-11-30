@@ -6,6 +6,7 @@ import TeamBirdsEyeCalendar from '../components/attendance/TeamBirdsEyeCalendar'
 import LoadingSpinner from '../components/common/LoadingSpinner'
 import StatusBadge from '../components/common/StatusBadge'
 import { fetchTeamRecords, resetFilters, fetchEmployeeDetails } from '../features/manager/managerSlice'
+import { formatISTDate, formatISTTime } from '../utils/helpers'
 
 const links = [
   { to: '/manager/dashboard', label: 'Dashboard' },
@@ -178,10 +179,10 @@ export default function TeamCalendar() {
                   monthRecords.map((record) => (
                     <div key={record._id} className="flex flex-wrap items-center justify-between rounded-xl border border-slate-800 bg-slate-900/80 px-4 py-3 text-sm text-slate-300">
                       <div>
-                        <p className="font-medium text-white">{new Date(record.date).toLocaleDateString()}</p>
+                        <p className="font-medium text-white">{formatISTDate(record.date)}</p>
                         <p className="text-xs text-slate-400">
-                          In: {record.checkInTime ? new Date(record.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'} • Out:{' '}
-                          {record.checkOutTime ? new Date(record.checkOutTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
+                          In: {record.checkInTime ? formatISTTime(record.checkInTime) : '—'} • Out{' '}
+                          {record.checkOutTime ? formatISTTime(record.checkOutTime) : '—'}
                         </p>
                       </div>
                       <StatusBadge status={record.status} />

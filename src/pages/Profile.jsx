@@ -1,5 +1,6 @@
 import { useSelector } from 'react-redux'
 import DashboardLayout from '../components/layout/DashboardLayout'
+import { formatISTDate } from '../utils/helpers'
 
 const links = [
   { to: '/employee/dashboard', label: 'Dashboard' },
@@ -49,7 +50,7 @@ export default function Profile() {
               <div className="rounded-xl card-surface-muted p-4">
                 <p className="text-xs uppercase tracking-wider text-cyan-400 font-bold">Member Since</p>
                 <p className="mt-2 text-base sm:text-lg text-white font-semibold">
-                  {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : '—'}
+                  {user?.createdAt ? formatISTDate(user.createdAt) : '—'}
                 </p>
               </div>
             </div>

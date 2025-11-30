@@ -11,6 +11,7 @@ import AttendanceTrendChart from '../components/charts/AttendanceTrendChart'
 import { loadManagerDashboard } from '../features/dashboard/dashboardSlice'
 import { fetchTodayStatus } from '../features/manager/managerSlice'
 import RealTimePresenceMap from '../components/dashboard/RealTimePresenceMap'
+import { formatISTTime } from '../utils/helpers'
 
 // Animation variants for staggered children
 const containerVariants = {
@@ -273,7 +274,7 @@ export default function ManagerDashboard() {
                       <p className="text-xs text-slate-400">{record.user.employeeId} • {record.user.department}</p>
                     </div>
                     <div className="text-right text-xs text-slate-400">
-                      <p>In: {record.checkInTime ? new Date(record.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}</p>
+                      <p>In: {record.checkInTime ? formatISTTime(record.checkInTime) : '—'}</p>
                       <StatusBadge status={record.status} />
                     </div>
                   </div>

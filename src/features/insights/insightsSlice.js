@@ -1,4 +1,5 @@
 import { createSlice, createSelector } from '@reduxjs/toolkit'
+import { formatISTDate } from '../../utils/helpers'
 
 /**
  * Redux slice for managing insights and recommendations
@@ -71,9 +72,11 @@ export const selectComputedInsights = createSelector(
     // Analyze punctuality by day of week
     const dayStats = records.reduce((acc, record) => {
       if (!record.checkInTime) return acc
-      
-      const date = new Date(record.date)
-      const day = date.toLocaleDateString('en-US', { weekday: 'long' })
+
+      const day = formatISTDate(record.date, { weekday: 'long' }, 'en-US')
+      if (day === '—') {
+        return acc
+      }
       
       if (!acc[day]) {
         acc[day] = { total: 0, onTime: 0, late: 0 }

@@ -13,6 +13,7 @@ import AttendanceTimeline from '../components/attendance/AttendanceTimeline'
 import AttendanceHeatmap from '../components/attendance/AttendanceHeatmap'
 import ConfettiCelebration from '../components/common/ConfettiCelebration'
 import { loadToday, performCheckIn, performCheckOut, loadHistory } from '../features/attendance/attendanceSlice'
+import { formatISTDate, formatISTTime } from '../utils/helpers'
 
 const WEEKDAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
@@ -58,9 +59,14 @@ export default function MarkAttendance() {
   const lateThresholdMinutes = attendanceSettings?.lateThresholdMinutes ?? 15
 
   const formatTimeLabel = (hour, minute = 0) => {
-    const reference = new Date()
-    reference.setHours(hour, minute, 0, 0)
-    return reference.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    const normalizedMinutes = Math.max(0, minute) % 60
+    const totalMinutes = (Math.max(0, hour) % 24) * 60 + normalizedMinutes
+    const displayHour24 = Math.floor(totalMinutes / 60) % 24
+    const period = displayHour24 >= 12 ? 'PM' : 'AM'
+    const displayHour12 = displayHour24 % 12 || 12
+    const paddedHour = String(displayHour12).padStart(2, '0')
+    const paddedMinute = String(normalizedMinutes).padStart(2, '0')
+    return `${paddedHour}:${paddedMinute} ${period}`
   }
 
   const lateOffsetHours = Math.floor(lateThresholdMinutes / 60)
@@ -310,12 +316,16 @@ export default function MarkAttendance() {
 
   const todaysDateLabel = useMemo(
     () =>
-      currentTime.toLocaleDateString('en-US', {
-        weekday: 'long',
-        month: 'long',
-        day: 'numeric',
-        year: 'numeric',
-      }),
+      formatISTDate(
+        currentTime,
+        {
+          weekday: 'long',
+          month: 'long',
+          day: 'numeric',
+          year: 'numeric',
+        },
+        'en-US'
+      ),
     [currentTime]
   )
 
@@ -429,7 +439,7 @@ export default function MarkAttendance() {
             />
             <GlassStatCard
               title="Check In Time"
-              value={today?.checkInTime ? new Date(today.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
+              value={today?.checkInTime ? formatISTTime(today.checkInTime) : '—'}
               description={today?.checkInTime ? 'Arrived on time' : 'Not checked in'}
               neonColor="sky"
               delay={1}
@@ -437,7 +447,7 @@ export default function MarkAttendance() {
             />
             <GlassStatCard
               title="Check Out Time"
-              value={today?.checkOutTime ? new Date(today.checkOutTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
+              value={today?.checkOutTime ? formatISTTime(today.checkOutTime) : '—'}
               description={today?.checkOutTime ? 'Day completed' : 'Still working'}
               neonColor="purple"
               delay={2}
@@ -492,13 +502,13 @@ export default function MarkAttendance() {
                 {[{
                   label: 'Check-in',
                   value: today?.checkInTime
-                    ? new Date(today.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                    ? formatISTTime(today.checkInTime)
                     : '—',
                   accent: 'emerald',
                 }, {
                   label: 'Check-out',
                   value: today?.checkOutTime
-                    ? new Date(today.checkOutTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                    ? formatISTTime(today.checkOutTime)
                     : isWorkingNow ? 'Working…' : '—',
                   accent: 'rose',
                 }, {
@@ -626,7 +636,7 @@ export default function MarkAttendance() {
             <div className="flex items-center justify-between rounded-2xl border border-slate-800/80 bg-slate-950/40 px-5 py-4">
               <div>
                 <p className="text-xs uppercase tracking-widest text-slate-400">Timeline focus</p>
-                <p className="text-lg font-semibold text-white">{selectedRecord ? new Date(selectedRecord.date || selectedRecord.checkInTime).toLocaleDateString() : 'Today'}</p>
+                <p className="text-lg font-semibold text-white">{selectedRecord ? formatISTDate(selectedRecord.date || selectedRecord.checkInTime) : 'Today'}</p>
               </div>
               {selectedRecord && (
                 <button

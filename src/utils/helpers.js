@@ -9,16 +9,44 @@ export function downloadBlob(blob, filename) {
   window.URL.revokeObjectURL(url)
 }
 
-export function formatDate(date, options = {}) {
-  return new Date(date).toLocaleDateString(undefined, options)
+export const IST_TIME_ZONE = 'Asia/Kolkata'
+const DEFAULT_LOCALE = 'en-IN'
+const DEFAULT_TIME_OPTIONS = { hour: '2-digit', minute: '2-digit' }
+
+export function formatISTDate(date, options = {}, locale = DEFAULT_LOCALE) {
+  if (!date) return '—'
+  return new Date(date).toLocaleDateString(locale, {
+    ...options,
+    timeZone: IST_TIME_ZONE,
+  })
 }
 
-export function formatTime(date, options = { hour: '2-digit', minute: '2-digit' }) {
-  return new Date(date).toLocaleTimeString([], options)
+export function formatISTTime(date, options = {}, locale = DEFAULT_LOCALE) {
+  if (!date) return '—'
+  return new Date(date).toLocaleTimeString(locale, {
+    ...DEFAULT_TIME_OPTIONS,
+    ...options,
+    timeZone: IST_TIME_ZONE,
+  })
 }
 
-export function formatDateTime(date) {
-  return `${formatDate(date)} ${formatTime(date)}`
+export function formatISTDateTime(date, dateOptions = {}, timeOptions = {}, locale = DEFAULT_LOCALE) {
+  if (!date) return '—'
+  const formattedDate = formatISTDate(date, dateOptions, locale)
+  const formattedTime = formatISTTime(date, timeOptions, locale)
+  return `${formattedDate} ${formattedTime}`.trim()
+}
+
+export function formatDate(date, options = {}, locale = DEFAULT_LOCALE) {
+  return formatISTDate(date, options, locale)
+}
+
+export function formatTime(date, options = {}, locale = DEFAULT_LOCALE) {
+  return formatISTTime(date, options, locale)
+}
+
+export function formatDateTime(date, dateOptions = {}, timeOptions = {}, locale = DEFAULT_LOCALE) {
+  return formatISTDateTime(date, dateOptions, timeOptions, locale)
 }
 
 export function calculateDuration(startTime, endTime) {

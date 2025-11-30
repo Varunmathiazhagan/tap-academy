@@ -265,15 +265,28 @@
 /* Utility classes */
 @layer utilities {
   .text-gradient {
-    @apply bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent;
+    color: #7c3aed; /* fallback purple */
+    background: linear-gradient(to right, #2563eb, #7c3aed);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
   
   .text-gradient-neon {
-    @apply bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent;
+    color: #38bdf8; /* fallback cyan */
+    background: linear-gradient(to right, #22d3ee, #3b82f6, #7c3aed);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
 
   .text-gradient-aurora {
-    @apply bg-gradient-to-r from-sky-100 via-cyan-200 to-sky-100 bg-clip-text text-transparent drop-shadow-lg;
+    color: #e0f2fe; /* fallback sky-100 */
+    background: linear-gradient(to right, #e0f2fe, #a5f3fc, #e0f2fe);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
   }
   
   .border-gradient {

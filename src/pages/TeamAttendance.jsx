@@ -4,6 +4,7 @@ import DashboardLayout from '../components/layout/DashboardLayout'
 import LoadingSpinner from '../components/common/LoadingSpinner'
 import StatusBadge from '../components/common/StatusBadge'
 import { fetchTeamRecords, setFilter, resetFilters } from '../features/manager/managerSlice'
+import { formatISTDate, formatISTTime } from '../utils/helpers'
 
 const links = [
   { to: '/manager/dashboard', label: 'Dashboard' },
@@ -130,12 +131,12 @@ export default function TeamAttendance() {
                       <div className="text-xs text-slate-400">{record.user.employeeId}</div>
                     </td>
                     <td className="px-4 py-3 text-slate-300">{record.user.department}</td>
-                    <td className="px-4 py-3 text-slate-300">{new Date(record.date).toLocaleDateString()}</td>
+                    <td className="px-4 py-3 text-slate-300">{formatISTDate(record.date)}</td>
                     <td className="px-4 py-3 text-slate-300">
-                      {record.checkInTime ? new Date(record.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
+                      {record.checkInTime ? formatISTTime(record.checkInTime) : '—'}
                     </td>
                     <td className="px-4 py-3 text-slate-300">
-                      {record.checkOutTime ? new Date(record.checkOutTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
+                      {record.checkOutTime ? formatISTTime(record.checkOutTime) : '—'}
                     </td>
                     <td className="px-4 py-3"><StatusBadge status={record.status} /></td>
                     <td className="px-4 py-3 text-slate-300">{record.totalHours?.toFixed ? record.totalHours.toFixed(2) : record.totalHours ?? '0.00'}</td>

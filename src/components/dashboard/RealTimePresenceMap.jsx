@@ -3,6 +3,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { useState, useEffect } from 'react'
 import clsx from 'clsx'
 import StatusBadge from '../common/StatusBadge'
+import { formatISTTime } from '../../utils/helpers'
 
 const getInitials = (name = '') => {
   if (!name) return 'NA'
@@ -77,7 +78,7 @@ export default function RealTimePresenceMap({ records = [] }) {
               </div>
             </div>
             <p className="mt-2 text-sm text-slate-400">
-              Live avatars of everyone who checked in today · Updated {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              Live avatars of everyone who checked in today · Updated {formatISTTime(currentTime)}
             </p>
           </div>
           

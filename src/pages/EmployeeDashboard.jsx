@@ -25,6 +25,7 @@ import {
   selectAttendanceScore,
   selectBadgeProgress 
 } from '../features/performance/performanceSlice'
+import { formatISTDate, formatISTTime } from '../utils/helpers'
 
 // Animation variants for staggered children
 const containerVariants = {
@@ -211,12 +212,12 @@ export default function EmployeeDashboard() {
                       animate={{ x: 0, opacity: 1 }}
                       transition={{ delay: 0.3 }}
                     >
-                      {new Date().toLocaleDateString('en-US', { 
-                        weekday: 'long', 
-                        month: 'long', 
-                        day: 'numeric', 
-                        year: 'numeric' 
-                      })}
+                      {formatISTDate(new Date(), {
+                        weekday: 'long',
+                        month: 'long',
+                        day: 'numeric',
+                        year: 'numeric',
+                      }, 'en-US')}
                     </motion.p>
                     
                     {/* Quick Status */}
@@ -235,7 +236,7 @@ export default function EmployeeDashboard() {
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
-                          In at {new Date(today.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          In at {formatISTTime(today.checkInTime)}
                         </div>
                       )}
                     </motion.div>
@@ -466,7 +467,7 @@ export default function EmployeeDashboard() {
               <div className="grid gap-4 sm:gap-5 md:gap-6 grid-cols-1 lg:grid-cols-2">
                 <HoursWorkedChart 
                   data={dashboardData.recent?.slice(-7).map(r => ({
-                    date: new Date(r.date).toLocaleDateString('en-US', { weekday: 'short' }),
+                    date: formatISTDate(r.date, { weekday: 'short' }, 'en-US'),
                     hours: r.totalHours || 0
                   })) ?? []}
                 />

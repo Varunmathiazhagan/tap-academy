@@ -189,15 +189,15 @@ export function GlassStatCard({
   return (
     <GlassCard 
       neonColor={neonColor} 
-      className="p-6 relative overflow-hidden"
+      className="p-4 sm:p-5 md:p-6 relative overflow-hidden"
       intensity="medium"
       gradient={true}
       floating={true}
     >
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex-1 min-w-0">
           <motion.p
-            className="text-sm font-bold uppercase tracking-[0.15em] text-gradient-aurora"
+            className="text-xs sm:text-sm font-semibold uppercase tracking-wider text-slate-300"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: delay * 0.1 }}
@@ -205,8 +205,8 @@ export function GlassStatCard({
             {title}
           </motion.p>
           
-          <motion.p
-            className="mt-4 text-4xl font-black text-white drop-shadow-lg"
+          <motion.div
+            className="mt-2 sm:mt-3 text-2xl sm:text-3xl md:text-4xl font-bold text-white"
             initial={{ scale: 0.5, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ 
@@ -216,11 +216,11 @@ export function GlassStatCard({
             }}
           >
             {value}
-          </motion.p>
+          </motion.div>
           
           {description && (
             <motion.p
-              className="mt-2 text-sm text-slate-300/90 font-medium"
+              className="mt-1 sm:mt-2 text-xs sm:text-sm text-slate-400"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: delay * 0.1 + 0.3 }}
@@ -254,7 +254,7 @@ export function GlassStatCard({
         
         {icon && (
           <motion.div
-            className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-white/15 via-white/10 to-white/5 backdrop-blur-xl border border-white/30 shadow-xl"
+            className="flex h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14 items-center justify-center rounded-xl sm:rounded-2xl bg-slate-800/60 border border-slate-700/50 flex-shrink-0"
             initial={{ scale: 0, rotate: -180 }}
             animate={{ scale: 1, rotate: 0 }}
             transition={{ 
@@ -264,7 +264,7 @@ export function GlassStatCard({
             }}
             whileHover={{ scale: 1.1, rotate: 5 }}
           >
-            <div className="text-white text-2xl">{icon}</div>
+            <span className="text-lg sm:text-xl md:text-2xl">{icon}</span>
           </motion.div>
         )}
       </div>

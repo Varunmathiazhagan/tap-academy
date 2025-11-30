@@ -149,27 +149,27 @@ const authSlice = createSlice({
         state.user = null
         state.token = null
         state.settings = null
-        safeStorage.removeItem(tokenKey)
-        safeStorage.removeItem(userKey)
-        safeStorage.removeItem(settingsKey)
+        safeStorage.remove(tokenKey)
+        safeStorage.remove(userKey)
+        safeStorage.remove(settingsKey)
       })
       .addCase(logoutUser.fulfilled, (state) => {
         state.user = null
         state.token = null
         state.status = 'idle'
         state.settings = null
-        safeStorage.removeItem(tokenKey)
-        safeStorage.removeItem(userKey)
-        safeStorage.removeItem(settingsKey)
+        safeStorage.remove(tokenKey)
+        safeStorage.remove(userKey)
+        safeStorage.remove(settingsKey)
       })
       .addCase(logoutUser.rejected, (state) => {
         state.user = null
         state.token = null
         state.status = 'idle'
         state.settings = null
-        safeStorage.removeItem(tokenKey)
-        safeStorage.removeItem(userKey)
-        safeStorage.removeItem(settingsKey)
+        safeStorage.remove(tokenKey)
+        safeStorage.remove(userKey)
+        safeStorage.remove(settingsKey)
       })
   },
 })

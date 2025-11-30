@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import clsx from 'clsx'
 import confetti from 'canvas-confetti'
+import { formatISTTime } from '../../utils/helpers'
 
 /**
  * Animated Circular Check-In/Out Button
@@ -191,7 +192,7 @@ export default function FloatingCheckButton({
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ delay: 0.3 }}
                   >
-                    {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                    {formatISTTime(new Date(), { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                   </motion.p>
                 </div>
               </div>

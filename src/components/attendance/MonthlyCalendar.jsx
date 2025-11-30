@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isToday } from 'date-fns'
 import clsx from 'clsx'
 import StatusBadge from '../common/StatusBadge'
+import { formatISTTime } from '../../utils/helpers'
 
 const statusColors = {
   present: 'bg-emerald-500/10 text-emerald-200 border-emerald-500/40 shadow-emerald-500/20',
@@ -99,7 +100,7 @@ export default function MonthlyCalendar({ monthDate, records }) {
                   <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Check In</p>
                   <p className="mt-1.5 text-base font-medium text-white">
                     {selectedDay.record.checkInTime
-                      ? new Date(selectedDay.record.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                      ? formatISTTime(selectedDay.record.checkInTime)
                       : '—'}
                   </p>
                 </div>
@@ -107,7 +108,7 @@ export default function MonthlyCalendar({ monthDate, records }) {
                   <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Check Out</p>
                   <p className="mt-1.5 text-base font-medium text-white">
                     {selectedDay.record.checkOutTime
-                      ? new Date(selectedDay.record.checkOutTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                      ? formatISTTime(selectedDay.record.checkOutTime)
                       : '—'}
                   </p>
                 </div>

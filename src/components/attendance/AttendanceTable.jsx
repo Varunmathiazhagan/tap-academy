@@ -1,4 +1,5 @@
 import StatusBadge from '../common/StatusBadge'
+import { formatISTDate, formatISTTime } from '../../utils/helpers'
 
 export default function AttendanceTable({ records = [] }) {
   if (!records.length) {
@@ -31,7 +32,7 @@ export default function AttendanceTable({ records = [] }) {
           {records.map((record) => (
             <tr key={record._id ?? record.date} className="transition hover:bg-slate-800/40">
               <td className="whitespace-nowrap px-4 py-4 font-medium text-slate-200">
-                {new Date(record.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                {formatISTDate(record.date, { weekday: 'short', month: 'short', day: 'numeric' }, 'en-US')}
               </td>
               <td className="whitespace-nowrap px-4 py-4 text-slate-300">
                 {record.checkInTime ? (
@@ -39,7 +40,7 @@ export default function AttendanceTable({ records = [] }) {
                     <svg className="h-3.5 w-3.5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
                     </svg>
-                    {new Date(record.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    {formatISTTime(record.checkInTime)}
                   </span>
                 ) : (
                   <span className="text-slate-500">—</span>
@@ -51,7 +52,7 @@ export default function AttendanceTable({ records = [] }) {
                     <svg className="h-3.5 w-3.5 text-rose-500" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
                     </svg>
-                    {new Date(record.checkOutTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    {formatISTTime(record.checkOutTime)}
                   </span>
                 ) : (
                   <span className="text-slate-500">—</span>
